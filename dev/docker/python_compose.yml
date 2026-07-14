@@ -1,10 +1,10 @@
 version: "3.7"
 services:
-    python-basico:
+    python-ml:
         build: 
             dockerfile: ./python.Dockerfile
             context: .
-        container_name: python-basico
+        container_name: python-ml
         volumes:
             - ./../script:/usr/src/myapp
         networks:
