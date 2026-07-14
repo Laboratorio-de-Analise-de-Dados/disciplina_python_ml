@@ -31,3 +31,4 @@ tensorflow-metadata==1.14.0
 tensorflow-probability==0.20.1
 tensorflow==2.12.0
 util-gfsilveira==0.1
+# fast-ml==3.68
