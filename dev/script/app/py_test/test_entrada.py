@@ -1,5 +1,6 @@
 from src.paginas import Paginas
 
+
 def test_estrutura_pagina():
     # Given
     teste_entrada = "Ajustado"

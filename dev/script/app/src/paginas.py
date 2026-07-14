@@ -5,6 +5,7 @@ from PIL import Image
 
 from src.acesso_data_test import acesso_data_test
 
+
 class Paginas:
     def pagina_estrutura(self) -> str:
         '''
