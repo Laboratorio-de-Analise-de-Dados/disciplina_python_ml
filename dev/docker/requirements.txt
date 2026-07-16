@@ -1,3 +1,4 @@
+duckdb==1.5.4
 EZGmail==2026.4.28
 fast-ml==3.68
 flake8==5.0.4
