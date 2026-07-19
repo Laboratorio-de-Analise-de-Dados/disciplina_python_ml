@@ -136,19 +136,20 @@ Serão 16 aulas, segundas-feiras das 08h às 12h. E terças-feiras das 13h às 1
 
 
 ## Avaliação:
-Projeto
+Projeto de um sistema de predição com base em algoritmos de Machine Learning.
 
-Modo de entrega: notebook.ipynb
+Modo de entrega: Sistema de predição com base em algoritmos de Machine Learning.
 
 Prazo: o commit deve ser feito até o dia <span style="color:red">17/04<br>
 NÃO VAMOS POSTERGAR</span><br><br>
 
 Aos alunos do PPGBB, Regimento no Item 6.2, pág. 16, para a conversão das porcentagens das notas em conceitos, seguindo tabela adaptada abaixo:
 <br><br>
-- Conceito A - Entre 90% e 100% (rendimento excelente);
-- Conceito B - Entre 75% e 89% (rendimento bom);
-- Conceito C - Entre 60% e 74% (rendimento regular);
-- Conceito D - Inferior a 60% (rendimento insuficiente).
+- Conceito A – Projeto funcionando;
+- Conceito B – Projeto existe, com AED, porém, deploy ou testagem parcial;
+- Conceito C – Projeto existe, com AED, deploy ou testagem parcial;
+- Conceito D – Não, não fiz nada;
+ 
 
 ##	Número máximo de alunos:
 12 alunos.
