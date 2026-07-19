@@ -146,8 +146,8 @@ NÃO VAMOS POSTERGAR</span><br><br>
 Aos alunos do PPGBB, Regimento no Item 6.2, pág. 16, para a conversão das porcentagens das notas em conceitos, seguindo tabela adaptada abaixo:
 <br><br>
 - Conceito A – Projeto funcionando;
-- Conceito B – Projeto existe, com AED, porém, deploy ou testagem parcial;
-- Conceito C – Projeto existe, com AED, deploy ou testagem parcial;
+- Conceito B – Projeto existe, com AED, deploy ou testagem parcial;
+- Conceito C – Projeto existe, com AED, deploy e testagem parcial;
 - Conceito D – Não, não fiz nada;
  
 
