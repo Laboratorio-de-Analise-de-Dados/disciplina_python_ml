@@ -42,7 +42,9 @@ def silhouette_scorer_func(estimator, X) -> float:
 
 
 class Clustering:
-
+    '''
+        Classe para realizar clustering em uma bivariada de um DataFrame.
+    '''
     def __init__(
             self,
             c1: str,
