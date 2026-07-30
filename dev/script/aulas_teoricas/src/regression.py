@@ -1,10 +1,18 @@
+# TensorFlow e tf.keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.wrappers.scikit_learn import KerasRegressor
+
 # Importando modelos
 from sklearn.linear_model import LinearRegression
-from scipy.stats import spearmanr
-from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error
-import seaborn as sns
+from sklearn.linear_model import BayesianRidge
+from sklearn.svm import SVR
+from sklearn.model_selection import RandomizedSearchCV
+
 # Visualização dos dados
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Edição das databases
 import pandas as pd
@@ -29,16 +37,19 @@ from sklearn.feature_selection import f_regression
 
 # Métricas da regressão
 from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_percentage_error
+from scipy.stats import spearmanr
 
 
 class Regression:
     '''
-        Regressor genérico que encapsula diferentes modelos de 
+        Regressor genérico que encapsula diferentes modelos de
         aprendizado de máquina.
             Parâmetros
             ----------
             df : pd.DataFrame
-                DataFrame contendo as features e a coluna alvo 'target'.
+                DataFrame contendo as features e a coluna alvo 'IFN-γ'.
 
             Métodos
             -------
@@ -50,21 +61,10 @@ class Regression:
         self.X = df.drop('IFN-γ', axis=1)
         self.y = df['IFN-γ']
 
-        return None
-
-    def __obter_metricas(self, grid_search: GridSearchCV, modelo: str) -> dict:
-        '''
-            Calcula métricas de avaliação do modelo.
-                Parâmetros
-                ----------
-                grid_search : GridSearchCV
-                    Objeto GridSearchCV já ajustado com os dados.
-                
-                Retorna
-                -------
-                metrics : dict
-                    Dicionário contendo as métricas de avaliação.
-        '''
+    def __obter_metricas(
+            self,
+            grid_search: GridSearchCV | RandomizedSearchCV,
+            modelo: str) -> tuple[pd.DataFrame, np.ndarray]:
         y_true = self.y
         y_pred = grid_search.predict(self.X)
 
@@ -77,9 +77,9 @@ class Regression:
         mae_cal = mean_absolute_error(df_test['y_true'], df_test['y_pred'])
         rmse_cal = mean_squared_error(df_test['y_true'], df_test['y_pred'])
         mape_cal = mean_absolute_percentage_error(
-                                                        df_test['y_true'],
-                                                        df_test['y_pred']
-                                                )
+            df_test['y_true'],
+            df_test['y_pred']
+        )
 
         mensagem = f'''
     R Spearman: {r_cal:.4f}
@@ -89,7 +89,7 @@ class Regression:
     RMSE: {rmse_cal:.4f}
     MAPE: {mape_cal:.4f}
         '''
-        
+
         p = sns.jointplot(
             x='y_true',
             y='y_pred',
@@ -110,42 +110,29 @@ class Regression:
         plt.ylabel('Predito')
         plt.show()
 
-        return None
+        metricas = pd.DataFrame({
+                'R Spearman': [r_cal],
+                'R p-value': [r_cal_p],
+                'R2': [r2_cal],
+                'MAE': [mae_cal],
+                'RMSE': [rmse_cal],
+                'MAPE': [mape_cal]
+        }).round(4)
+
+        return metricas, y_pred
 
     def __variaveis_selecionadas(
             self,
-            grid_search: GridSearchCV) -> pd.DataFrame:
-        '''
-            Exibe as variáveis selecionadas pelo melhor modelo encontrado pelo 
-            GridSearchCV.
-                Parâmetros
-                ----------
-                grid_search : GridSearchCV
-                    Objeto GridSearchCV já ajustado com os dados.
-                
-                Retorna
-                -------
-                df_summary : pd.DataFrame
-                    DataFrame contendo o status de cada atributo no pipeline.
-        '''
-        
-        # 1. Extrai o melhor pipeline ajustado pelo GridSearchCV
+            grid_search: GridSearchCV | RandomizedSearchCV) -> pd.DataFrame:
         best_pipeline = grid_search.best_estimator_
-
-        # 2. Recupera os nomes de TODAS as colunas geradas após a 
-        # codificação/escala (ColumnTransformer)
         feat_names_orig = best_pipeline['preprocessor'].get_feature_names_out()
 
-        # 3. Etapa 1: Aplica a máscara do VarianceThreshold
         mask_variance = best_pipeline['var_threshold'].get_support()
         features_after_variance = feat_names_orig[mask_variance]
 
-        # 4. Etapa 2: Aplica a máscara do SelectKBest sobre as colunas 
-        # sobressalentes
         mask_kbest = best_pipeline['feature_selection'].get_support()
         selected_features = features_after_variance[mask_kbest]
 
-        # 5. Imprime o resultado final de forma amigável
         m = "Total de variáveis "
         print(f"{m}originais pré-processadas: {len(feat_names_orig)}")
         print(f"{m}após VarianceThreshold:    {len(features_after_variance)}")
@@ -155,11 +142,9 @@ class Regression:
         for i, feature in enumerate(selected_features, 1):
             print(f"{i}. {feature}")
 
-        # Cria uma máscara final combinando as duas seleções
         final_mask = mask_variance.copy()
         final_mask[mask_variance] = mask_kbest
 
-        # Constrói o relatório em DataFrame
         df_summary = pd.DataFrame({
             'Atributo_Preprocessado': feat_names_orig,
             'Passou_Variancia': mask_variance,
@@ -172,14 +157,6 @@ class Regression:
         return df_summary
 
     def __preprocessador(self) -> ColumnTransformer:
-        '''
-            Cria um pré-processador que padroniza variáveis numéricas e 
-            aplica One-Hot Encoding em variáveis categóricas.
-                Retorna
-                -------
-                preprocessor : ColumnTransformer
-                    Objeto ColumnTransformer para pré-processamento.
-        '''
         preprocessor = ColumnTransformer(
             transformers=[
                 (
@@ -206,27 +183,16 @@ class Regression:
         return preprocessor
 
     def __regressor_classify(self) -> tuple[Pipeline, dict]:
-        '''
-            Cria um pipeline para o regressor genérico e define a grade de 
-            hiperparâmetros para busca.
-                Retorna
-                -------
-                pipeline : Pipeline
-                    Objeto Pipeline configurado com pré-processamento e regressão linear.
-                param_grid : dict
-                    Dicionário contendo a grade de hiperparâmetros para busca.
-        '''
-        # 4. Pipeline Principal
         pipeline = Pipeline([
             ('preprocessor', self.__preprocessador()),
             ('var_threshold', VarianceThreshold(threshold=1e-4)),
             ('feature_selection', SelectKBest(
-                                                score_func=f_regression,
-                                                k=min(10, self.X.shape[1])
-                                            )), # Camada de Feature Selection
+                score_func=f_regression,
+                k=min(10, self.X.shape[1])
+            )),
             ('regressor', LinearRegression())
         ])
-        # 5. Definição da Grade de Hiperparâmetros
+
         param_grid = {
             'var_threshold__threshold': [1e-4, 0.01, 0.05],
             'feature_selection__k': [1, 2, 'all'],
@@ -236,28 +202,126 @@ class Regression:
 
         return pipeline, param_grid
 
+    def __svm_classify(self) -> tuple[Pipeline, dict]:
+        pipeline = Pipeline([
+            ('preprocessor', self.__preprocessador()),
+            ('var_threshold', VarianceThreshold(threshold=1e-4)),
+            ('feature_selection', SelectKBest(
+                score_func=f_regression,
+                k=min(10, self.X.shape[1])
+            )),
+            ('svm', SVR())
+        ])
+
+        param_grid = {
+            'var_threshold__threshold': [1e-4, 0.01, 0.05],
+            'feature_selection__k': [1, 2, 'all'],
+            'svm__kernel': ['linear', 'rbf'],
+            'svm__C': [0.1, 1, 10],
+            'svm__epsilon': [0.01, 0.1, 0.2]
+        }
+
+        return pipeline, param_grid
+
+    def __bayesian_ridge_classify(self) -> tuple[Pipeline, dict]:
+        pipeline = Pipeline([
+            ('preprocessor', self.__preprocessador()),
+            ('var_threshold', VarianceThreshold(threshold=1e-4)),
+            ('feature_selection', SelectKBest(
+                score_func=f_regression,
+                k=min(10, self.X.shape[1])
+            )),
+            ('nb', BayesianRidge())
+        ])
+
+        param_grid = {
+            'var_threshold__threshold': [1e-4, 0.01, 0.05],
+            'feature_selection__k': [1, 2, 'all'],
+            'nb__max_iter': [100, 300],
+            'nb__alpha_1': [1e-6, 1e-4],
+            'nb__lambda_1': [1e-6, 1e-4]
+        }
+
+        return pipeline, param_grid
+
+    # Transformado em método estático para permitir a serialização (pickle)
+    @staticmethod
+    def _neural_network_model(
+            optimizer='SGD',
+            activation1='relu',
+            activation2='relu') -> Sequential:
+        model = Sequential([
+            Dense(64, activation=activation1),
+            Dense(32, activation=activation2),
+            Dense(1, activation='linear'),
+        ])
+
+        model.compile(
+            optimizer=optimizer,
+            loss='mse',
+            metrics=['mae']
+        )
+
+        return model
+
+    def __neural_network_classify(self) -> tuple[Pipeline, dict]:
+        pipeline = Pipeline([
+            ('preprocessor', self.__preprocessador()),
+            ('var_threshold', VarianceThreshold(threshold=1e-4)),
+            ('feature_selection', SelectKBest(
+                score_func=f_regression,
+                k=min(10, self.X.shape[1])
+            )),
+            ('nn', KerasRegressor(
+                                    build_fn=self._neural_network_model,
+                                    verbose=0
+                                )),
+        ])
+
+        param_grid = {
+            'var_threshold__threshold': [1e-4, 0.01, 0.05],
+            'feature_selection__k': [1, 2, 'all'],
+            'nn__optimizer': ['SGD', 'RMSprop', 'Adam'],
+            'nn__epochs': [10, 100],
+            'nn__batch_size': [16, 32],
+            'nn__activation1': ['relu', 'tanh', 'sigmoid', 'softmax'],
+            'nn__activation2': ['relu', 'tanh', 'sigmoid', 'softmax'],
+        }
+
+        return pipeline, param_grid
+
     def regress(
             self,
             modelo: str,
-            n_splits: int = 5) -> tuple[pd.DataFrame, np.ndarray]:
-        '''
-            Treina e avalia o modelo especificado.
-                Parâmetros
-                ----------
-                modelo : str
-                    Nome do modelo a ser treinado. Opções: 
-                                    'regressor'.
-                n_splits : int, opcional
-                    Número de divisões para a validação cruzada (default é 5).
-                Retorna
-                    return retorno, grid_search.predict(self.X)
-                    pd.DataFrame
-        '''
+            n_splits: int = 5,
+            n_iter_search: int = 20) -> tuple[pd.DataFrame, np.ndarray]:
         if modelo == 'regressor':
-            # 7. Configuração do GridSearch para Regressor genérico
             estimator, param_grid = self.__regressor_classify()
-            kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+        elif modelo == 'svm':
+            estimator, param_grid = self.__svm_classify()
+        elif modelo == 'bayesian_ridge':
+            estimator, param_grid = self.__bayesian_ridge_classify()
+        elif modelo == 'neural_network':
+            estimator, param_grid = self.__neural_network_classify()
+        else:
+            mensagem = f"Modelo inválido: {modelo}. "
+            mensagem += "Escolha 'regressor', 'svm', 'bayesian_ridge'"
+            mensagem += " ou 'neural_network'."
+            raise ValueError(mensagem)
 
+        kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+        if modelo == 'neural_network':
+            grid_search = RandomizedSearchCV(
+                estimator=estimator,
+                param_distributions=param_grid,
+                # Executará apenas N combinações aleatórias
+                # (ex: 20 em vez de milhares)
+                n_iter=n_iter_search,
+                cv=kf,
+                scoring='neg_mean_squared_error',
+                n_jobs=-1,
+            )
+        else:
             grid_search = GridSearchCV(
                 estimator=estimator,
                 param_grid=param_grid,
@@ -265,14 +329,24 @@ class Regression:
                 scoring='neg_mean_squared_error',
                 n_jobs=-1
             )
-            # 5. Treinando o modelo para encontrar os melhores hiperparâmetros e grupos
-            print("Iniciando o Grid Search com Cross Validation...")
+
+        print("Iniciando o Grid Search com Cross Validation...")
+        if modelo == 'neural_network':
+            early_stopping = EarlyStopping(
+                monitor='loss',
+                mode='min',
+                patience=10,
+                min_delta=0.001,
+                restore_best_weights=True
+            )
+            grid_search.fit(self.X, self.y, nn__callbacks=[early_stopping])
+        else:
             grid_search.fit(self.X, self.y)
 
         self.__variaveis_selecionadas(grid_search=grid_search)
-        self.__obter_metricas(grid_search=grid_search, modelo=modelo)
+        metricas, y_pred = self.__obter_metricas(
+            grid_search=grid_search,
+            modelo=modelo
+        )
 
-
-        retorno = grid_search.predict(self.X)
-
-        return retorno
+        return metricas, y_pred
