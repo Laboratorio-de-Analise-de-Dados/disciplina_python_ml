@@ -342,7 +342,10 @@ class Regression:
             grid_search.fit(self.X, self.y, nn__callbacks=[early_stopping])
         else:
             grid_search.fit(self.X, self.y)
-
+        print("Grid Search concluído.")
+        print('='*50)
+        print(f"Melhores parâmetros encontrados: {grid_search.best_params_}")
+        print('='*50)
         self.__variaveis_selecionadas(grid_search=grid_search)
         metricas, y_pred = self.__obter_metricas(
             grid_search=grid_search,
