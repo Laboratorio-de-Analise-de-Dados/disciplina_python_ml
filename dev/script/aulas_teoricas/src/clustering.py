@@ -7,10 +7,8 @@ from sklearn.metrics import adjusted_mutual_info_score
 
 # Bibliotecas para clustering
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
-from scipy.cluster.hierarchy import linkage
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold, cross_val_score
-from sklearn.neighbors import kneighbors_graph
 
 # Testagem dos modelos
 from scipy.stats import chisquare
@@ -24,6 +22,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 def silhouette_scorer_func(estimator, X) -> float:
     '''
         Função para calcular a pontuação de Silhouette para um estimador de
@@ -35,7 +34,8 @@ def silhouette_scorer_func(estimator, X) -> float:
                 float: Pontuação de Silhouette média para os dados fornecidos
     '''
     labels = estimator.fit_predict(X)
-    # Silhouette precisa de pelo menos 2 clusters distintos no conjunto de validação
+    # Silhouette precisa de pelo menos 2 clusters distintos no conjunto
+    # de validação
     if len(np.unique(labels)) > 1:
         return silhouette_score(X, labels)
     return -1.0  # Retorna pontuação baixa caso haja falha de separação no fold
@@ -82,7 +82,7 @@ class Clustering:
         ami = np.nan
 
         try:
-            # Calcula a métrica de Silhouette 
+            # Calcula a métrica de Silhouette
             ss = round(silhouette_score(X_scaled, pred), 3)
             # Calcula a métrica de Calinski-Harabasz
             chs = round(calinski_harabasz_score(X_scaled, pred), 3)
@@ -95,7 +95,7 @@ class Clustering:
 
             # Calcula a métrica de Adjusted Mutual Info Score
             ami = round(adjusted_mutual_info_score(obs, pred), 3)
-        except Exception as e:
+        except Exception:
             pass
 
         return (ss, chs, dbs, ari, ami)
@@ -123,7 +123,7 @@ class Clustering:
             marginal_ticks=True,
             data=self.df,
         )
-        p.fig.suptitle(f"Correlação Variáveis Discretas", y=1.02)
+        p.fig.suptitle("Correlação Variáveis Discretas", y=1.02)
         p.set_axis_labels(
             xlabel=self.c1,
             ylabel=self.c2
@@ -133,7 +133,7 @@ class Clustering:
     def __grafico_box(
             self,
             cluster_labels: np.ndarray) -> None:
-        fig, ax = plt.subplots(1, 2, figsize=(13, 5))
+        _, ax = plt.subplots(1, 2, figsize=(13, 5))
         plt.suptitle('Diferença das classes clusterizadas')
         g = sns.boxplot(
             x=cluster_labels,
@@ -142,9 +142,9 @@ class Clustering:
             ax=ax[0]
         )
         g.set(
-            title = f' {self.c1} para Clusters',
+            title=f' {self.c1} para Clusters',
             # xlabel = cluster_labels,
-            ylabel = self.c1,
+            ylabel=self.c1,
         )
         g = sns.boxplot(
             x=cluster_labels,
@@ -153,7 +153,7 @@ class Clustering:
             ax=ax[1]
         )
         g.set(
-            title = f' {self.c2} para Clusters',
+            title=f' {self.c2} para Clusters',
             # xlabel = cluster_labels,
             ylabel=self.c2,
         )
@@ -182,13 +182,13 @@ class Clustering:
         return retorno
 
     def cross_validation(
-            self,
-            n_splits: int = 5,
-            random_state: int = 42,
-            print_metricas: bool = True
-        ) -> None | tuple:
+                self,
+                n_splits: int = 5,
+                random_state: int = 42,
+                print_metricas: bool = True
+            ) -> None | tuple:
         '''
-            Função para realizar validação cruzada utilizando a pontuação de 
+            Função para realizar validação cruzada utilizando a pontuação de
             Silhouette para um par de variáveis em um DataFrame.
                 Parâmetros:
                     self.c1: str - Nome da primeira variável
@@ -204,7 +204,7 @@ class Clustering:
                     None
         '''
         # Preparação dos Dados Sintéticos
-        X_raw = self.df[[self.c1,self.c2]]
+        X_raw = self.df[[self.c1, self.c2]]
 
         scaler = StandardScaler()
         X_scaled = scaler.fit_transform(X_raw)
@@ -304,9 +304,9 @@ class Clustering:
             print(f"Parâmetros: {best_params}")
             print(f"Silhouette Score Médio (CV): {best_score:.4f}\n")
 
-            # Calcular métricas de avaliação do clustering com os melhores 
+            # Calcular métricas de avaliação do clustering com os melhores
             # hiperparâmetros
-            
+
             ss, chs, dbs, ari, ami = self.__calcular_metricas(**metricas)
             print(f"Silhouette Score -> {ss}")
             print(f"Calinski Harabasz Score -> {chs}")
@@ -324,9 +324,9 @@ class Clustering:
         return cluster_labels, self.__calcular_metricas(**metricas)
 
     def __testar_kmeans(
-        self,
-        best_param: dict,
-        df_test: pd.DataFrame) -> bool:
+            self,
+            best_param: dict,
+            df_test: pd.DataFrame) -> bool:
         '''
             Função para testar a consistência dos clusters obtidos no conjunto
             de treino com os clusters obtidos no conjunto de validação,
@@ -355,18 +355,15 @@ class Clustering:
         labels_train = kmeans_train.labels_
 
         # Previsão dos clusters da Validação usando os centroides do Treino
-        labels_val_predicted = kmeans_train.predict(df_test[[
-                                                                self.c1, 
-                                                            self.c2]]
-                                                    )
+        labels_val_predicted = kmeans_train.predict(
+                                                df_test[[self.c1, self.c2]]
+                                            )
 
-        # Modelo independente treinado diretamente na Validação 
+        # Modelo independente treinado diretamente na Validação
         # (para comparação via ARI)
         kmeans_val_direct = KMeans(**best_param).fit(
-                                                        df_test[[
-                                                            self.c1,
-                                                            self.c2]]
-                                                    )
+                                                df_test[[self.c1, self.c2]]
+                                            )
         labels_val_direct = kmeans_val_direct.labels_
 
         # 4. Cálculo das Frequências
@@ -375,18 +372,19 @@ class Clustering:
         train_proportions = train_counts / len(self.df[[self.c1, self.c2]])
 
         # Frequências esperadas na Validação (Proporção do Treino * N_val)
-        expected_val_counts = train_proportions * len(df_test[[
-                                                                self.c1,
-                                                                self.c2
-                                                            ]])
+        expected_val_counts = train_proportions * len(
+                                                df_test[[self.c1, self.c2]]
+                                            )
 
         # Frequências observadas reais na Validação
         observed_val_counts = (
                                 pd.Series(labels_val_predicted)
                                 .value_counts()
-                                .reindex(range(
-                                                best_param['n_clusters']),
-                                                fill_value=0).sort_index()
+                                .reindex(
+                                            range(best_param['n_clusters']),
+                                            fill_value=0
+                                        )
+                                .sort_index()
                             )
 
         # 5. Execução do Teste Qui-Quadrado de Aderência
@@ -427,17 +425,18 @@ class Clustering:
             retorno = False
 
         print("-" * 50)
-        print(f"Adjusted Rand Index (ARI) ", end=" ")
-        print(f"entre modelo de Treino e modelo da Validação: {ari_score:.4f}")
-        print("(ARI próximo de 1.0 indica que ", end=" ")
-        print("a partição geométrica gerada é virtualmente idêntica)")
+        mensagem = "Adjusted Rand Index (ARI) entre modelo de Treino e modelo "
+        mensagem += f"da Validação: {ari_score:.4f} (ARI próximo de 1.0"
+        mensagem += " indica que a partição geométrica gerada é"
+        mensagem += " virtualmente idêntica)"
+        print(mensagem)
 
         return retorno
 
     def __testar_dbscan(
-        self,
-        best_param: dict,
-        df_test: pd.DataFrame) -> bool:
+            self,
+            best_param: dict,
+            df_test: pd.DataFrame) -> bool:
         '''
             Função para testar a consistência dos clusters obtidos no conjunto
             de treino com os clusters obtidos no conjunto de validação,
@@ -465,7 +464,7 @@ class Clustering:
         labels_train = dbscan_train.labels_
 
         # 4. Projeção dos clusters do Treino para a Validação via KNN
-        # Treina-se um modelo de K-Vizinhos Mais Próximos (k=1) com os 
+        # Treina-se um modelo de K-Vizinhos Mais Próximos (k=1) com os
         # rótulos do DBSCAN no Treino
         knn = KNeighborsClassifier(n_neighbors=1)
         knn.fit(self.df[[self.c1, self.c2]], labels_train)
@@ -479,7 +478,7 @@ class Clustering:
                                                             ]])
         labels_val_direct = dbscan_val_direct.labels_
 
-        # 5. Mapeamento e Contagem de Frequências (incluindo o rótulo de 
+        # 5. Mapeamento e Contagem de Frequências (incluindo o rótulo de
         # ruído -1, se houver)
         all_clusters = np.unique(np.concatenate([
                                                     labels_train,
@@ -524,11 +523,11 @@ class Clustering:
         print("=" * 55)
         print(" RESULTADOS DA COMPARAÇÃO DE CLUSTERS (DBSCAN)")
         print("=" * 55)
-        print(f"Clusters identificados no Treino:       ")
+        print("Clusters identificados no Treino:       ")
         print(f"{np.unique(labels_train)}")
-        print(f"Frequências Esperadas na Validação:     ")
+        print("Frequências Esperadas na Validação:     ")
         print(f"{expected_val_counts.values.round(2)}")
-        print(f"Frequências Observadas na Validação:    ")
+        print("Frequências Observadas na Validação:    ")
         print(f"{observed_val_counts.values}")
         print("-" * 55)
         print(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
@@ -541,8 +540,10 @@ class Clustering:
             print("na validação É IGUAL à do treino (p > 0.05).")
             retorno = True
         else:
-            print("Conclusão: Rejeitamos H0. A distribuição dos clusters na " \
-            "validação É DIFERENTE da do treino (p <= 0.05).")
+            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos "
+            mensagem += "clusters na validação É DIFERENTE da do treino  "
+            mensagem += "(p <= 0.05)."
+            print(mensagem)
             retorno = False
 
         print("-" * 55)
@@ -552,11 +553,11 @@ class Clustering:
         return retorno
 
     def __testar_agg(
-        self,
-        best_param: dict,
-        df_test: pd.DataFrame) -> bool:
+            self,
+            best_param: dict,
+            df_test: pd.DataFrame) -> bool:
         '''
-            Função para testar a consistência dos clusters obtidos no conjunto 
+            Função para testar a consistência dos clusters obtidos no conjunto
             de treino com os clusters obtidos no conjunto de validação,
             utilizando o
             teste Qui-Quadrado de Aderência e o Índice de Rand Ajustado (ARI).
@@ -641,11 +642,11 @@ class Clustering:
         print("=" * 60)
         print(" RESULTADOS DA COMPARAÇÃO (AGGLOMERATIVE CLUSTERING)")
         print("=" * 60)
-        print(f"Clusters no Treino:                  ")
+        print("Clusters no Treino:                  ")
         print(f"{all_clusters}")
-        print(f"Frequências Esperadas na Validação:  ")
+        print("Frequências Esperadas na Validação:  ")
         print(f"{expected_val_counts.values.round(2)}")
-        print(f"Frequências Observadas na Validação:  ")
+        print("Frequências Observadas na Validação:  ")
         print(f"{observed_val_counts.values}")
         print("-" * 60)
         print(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
@@ -654,12 +655,14 @@ class Clustering:
 
         alpha = 0.05
         if p_value > alpha:
-            print("Conclusão: Não rejeitamos H0. A distribuição dos " \
-            "clusters na validação É IGUAL à do treino (p > 0.05).")
+            mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
+            mensagem += "clusters na validação É IGUAL à do treino (p > 0.05)."
+            print(mensagem)
             retorno = True
         else:
-            print("Conclusão: Rejeitamos H0. A distribuição dos " \
-                "clusters na validação É DIFERENTE da do treino (p <= 0.05).")
+            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos clusters "
+            mensagem += "na validação É DIFERENTE da do treino (p <= 0.05)."
+            print(mensagem)
             retorno = False
 
         print("-" * 60)

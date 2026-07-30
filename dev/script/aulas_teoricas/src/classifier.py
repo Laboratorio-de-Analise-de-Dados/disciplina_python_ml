@@ -38,12 +38,11 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
-from sklearn.metrics import roc_curve
 
 
 class Classifier:
     '''
-        Classificador genérico que encapsula diferentes modelos de 
+        Classificador genérico que encapsula diferentes modelos de
         aprendizado de máquina.
             Parâmetros
             ----------
@@ -61,16 +60,15 @@ class Classifier:
         self.y = df['classe']
 
         return None
-    
+
     def __matrix_confusao(self, grid_search: GridSearchCV) -> None:
         '''
-            Exibe a matriz de confusão do melhor modelo encontrado pelo 
+            Exibe a matriz de confusão do melhor modelo encontrado pelo
             GridSearchCV.
                 Parâmetros
                 ----------
                 grid_search : GridSearchCV
                     Objeto GridSearchCV já ajustado com os dados.
-                
         '''
         grid_search.fit(self.X, self.y)
 
@@ -123,7 +121,7 @@ class Classifier:
 
     def __metricas_pontuais(self, grid_search: GridSearchCV) -> None:
         '''
-            Exibe os melhores hiperparâmetros e a acurácia do melhor modelo 
+            Exibe os melhores hiperparâmetros e a acurácia do melhor modelo
             encontrado pelo GridSearchCV.
                 Parâmetros
                 ----------
@@ -131,7 +129,7 @@ class Classifier:
                     Objeto GridSearchCV já ajustado com os dados.
         '''
         # 10. Treinamento Final no Dataset Completo
-        # Após validar a capacidade de generalização via Nested CV, ajustamos 
+        # Após validar a capacidade de generalização via Nested CV, ajustamos
         # o GridSearch nos dados totais
 
         print("--- Treinando modelo com Pipeline de pré-processamento ---")
@@ -141,7 +139,6 @@ class Classifier:
         print("\n--- Melhores Resultados do Grid Search ---")
         print(f"Melhores hiperparâmetros: {grid_search.best_params_}")
         print(f"Melhor acurácia (CV): {grid_search.best_score_:.4f}")
-
 
         # 10. Avaliação no conjunto de Teste
         best_model = grid_search.best_estimator_
@@ -156,13 +153,13 @@ class Classifier:
             self,
             grid_search: GridSearchCV) -> pd.DataFrame:
         '''
-            Exibe as variáveis selecionadas pelo melhor modelo encontrado pelo 
+            Exibe as variáveis selecionadas pelo melhor modelo encontrado pelo
             GridSearchCV.
                 Parâmetros
                 ----------
                 grid_search : GridSearchCV
                     Objeto GridSearchCV já ajustado com os dados.
-                
+
                 Retorna
                 -------
                 df_summary : pd.DataFrame
@@ -171,7 +168,7 @@ class Classifier:
         # 1. Extrai o melhor pipeline ajustado pelo GridSearchCV
         best_pipeline = grid_search.best_estimator_
 
-        # 2. Recupera os nomes de TODAS as colunas geradas após a 
+        # 2. Recupera os nomes de TODAS as colunas geradas após a
         # codificação/escala (ColumnTransformer)
         feat_names_orig = best_pipeline['preprocessor'].get_feature_names_out()
 
@@ -179,7 +176,7 @@ class Classifier:
         mask_variance = best_pipeline['var_threshold'].get_support()
         features_after_variance = feat_names_orig[mask_variance]
 
-        # 4. Etapa 2: Aplica a máscara do SelectKBest sobre as colunas 
+        # 4. Etapa 2: Aplica a máscara do SelectKBest sobre as colunas
         # sobressalentes
         mask_kbest = best_pipeline['feature_selection'].get_support()
         selected_features = features_after_variance[mask_kbest]
@@ -212,7 +209,7 @@ class Classifier:
 
     def __preprocessador(self) -> ColumnTransformer:
         '''
-            Cria um pré-processador que padroniza variáveis numéricas e 
+            Cria um pré-processador que padroniza variáveis numéricas e
             aplica One-Hot Encoding em variáveis categóricas.
                 Retorna
                 -------
@@ -246,7 +243,7 @@ class Classifier:
 
     def __knn_classify(self) -> tuple[Pipeline, dict]:
         '''
-            Cria um pipeline para o classificador KNN e define a grade de 
+            Cria um pipeline para o classificador KNN e define a grade de
             hiperparâmetros para busca.
                 Retorna
                 -------
@@ -262,7 +259,7 @@ class Classifier:
             ('feature_selection', SelectKBest(
                                                 score_func=f_classif,
                                                 k=min(10, self.X.shape[1])
-                                            )), # Camada de Feature Selection
+                                            )),
             ('knn', KNeighborsClassifier())
         ])
         # 5. Definição da Grade de Hiperparâmetros
@@ -294,21 +291,21 @@ class Classifier:
             ('feature_selection', SelectKBest(
                                                 score_func=f_classif,
                                                 k=min(10, self.X.shape[1])
-                                            )), # Camada de Feature Selection
+                                            )),
             ('svm', SVC(random_state=42))
         ])
         # 5. Definição da Grade de Hiperparâmetros para o SVM
-        # Note o prefixo 'svm__' para acessar os parâmetros do SVC dentro do 
+        # Note o prefixo 'svm__' para acessar os parâmetros do SVC dentro do
         # Pipeline
         param_grid = {
             'var_threshold__threshold': [1e-4, 0.01, 0.05],
             'feature_selection__k': [1, 2, 'all'],
             # Parâmetro de regularização
-            'svm__C': [0.1, 1, 10, 100],                
+            'svm__C': [0.1, 1, 10, 100],
             # Tipo de kernel (Linear ou Radial Basis Function)
-            'svm__kernel': ['linear', 'rbf'],           
+            'svm__kernel': ['linear', 'rbf'],
             # Coeficiente do kernel RBF
-            'svm__gamma': ['scale', 'auto', 0.01, 0.1]  
+            'svm__gamma': ['scale', 'auto', 0.01, 0.1]
         }
 
         return pipeline, param_grid
@@ -332,24 +329,24 @@ class Classifier:
             ('feature_selection', SelectKBest(
                                                 score_func=f_classif,
                                                 k=min(10, self.X.shape[1])
-                                            )), # Camada de Feature Selection
+                                            )),
             ('rf', RandomForestClassifier(random_state=42))
         ])
 
         # 5. Definição da Grade de Hiperparâmetros para o Random Forest
-        # Note o prefixo 'rf__' para acessar os parâmetros do modelo dentro do 
+        # Note o prefixo 'rf__' para acessar os parâmetros do modelo dentro do
         # Pipeline
         param_grid = {
             'var_threshold__threshold': [1e-4, 0.01, 0.05],
             'feature_selection__k': [1, 2, 'all'],
             # Número de árvores na floresta
-            'rf__n_estimators': [50, 100, 200],           
+            'rf__n_estimators': [50, 100, 200],
             # Profundidade máxima de cada árvore
-            'rf__max_depth': [None, 5, 10],               
+            'rf__max_depth': [None, 5, 10],
             # Mínimo de amostras para dividir um nó
-            'rf__min_samples_split': [2, 5],              
+            'rf__min_samples_split': [2, 5],
             # Critério de medição de qualidade da divisão
-            'rf__criterion': ['gini', 'entropy']          
+            'rf__criterion': ['gini', 'entropy']
         }
 
         return pipeline, param_grid
@@ -373,24 +370,24 @@ class Classifier:
             ('feature_selection', SelectKBest(
                                                 score_func=f_classif,
                                                 k=min(10, self.X.shape[1])
-                                            )), # Camada de Feature Selection
+                                            )),
             ('gb', GradientBoostingClassifier(random_state=42))
         ])
 
         # 5. Definição da Grade de Hiperparâmetros para o Gradient Boosting
-        # Note o prefixo 'gb__' para acessar os parâmetros do modelo dentro 
+        # Note o prefixo 'gb__' para acessar os parâmetros do modelo dentro
         # do Pipeline
         param_grid = {
             'var_threshold__threshold': [1e-4, 0.01, 0.05],
             'feature_selection__k': [1, 2, 'all'],
             # Número de estágios de boosting (árvores)
-            'gb__n_estimators': [50, 100, 150],        
+            'gb__n_estimators': [50, 100, 150],
             # Taxa de aprendizado (encolhimento do impacto de cada árvore)
-            'gb__learning_rate': [0.01, 0.1, 0.2],     
+            'gb__learning_rate': [0.01, 0.1, 0.2],
             # Profundidade máxima dos estimadores individuais
-            'gb__max_depth': [3, 5],                   
+            'gb__max_depth': [3, 5],
             # Fração de amostras usadas para ajustar os estimadores base
-            'gb__subsample': [0.8, 1.0]                
+            'gb__subsample': [0.8, 1.0]
         }
 
         return pipeline, param_grid
@@ -413,7 +410,7 @@ class Classifier:
             ('feature_selection', SelectKBest(
                                                 score_func=f_classif,
                                                 k=min(10, self.X.shape[1])
-                                            )), # Camada de Feature Selection
+                                            )),
             ('nb', GaussianNB())
         ])
 
@@ -436,7 +433,7 @@ class Classifier:
                 Retorna
                 -------
                 pipeline : Pipeline
-                    Objeto Pipeline configurado com pré-processamento e 
+                    Objeto Pipeline configurado com pré-processamento e
                     Rede Neural (MLP).
                 param_grid : dict
                     Dicionário contendo a grade de hiperparâmetros para busca.
@@ -449,24 +446,24 @@ class Classifier:
             ('feature_selection', SelectKBest(
                                                 score_func=f_classif,
                                                 k=min(10, self.X.shape[1])
-                                            )), # Camada de Feature Selection
+                                            )),
             ('mlp', MLPClassifier(max_iter=1000, random_state=42))
         ])
 
         # 5. Definição da Grade de Hiperparâmetros para a Rede Neural
-        # Note o prefixo 'mlp__' para acessar os parâmetros do modelo dentro do 
+        # Note o prefixo 'mlp__' para acessar os parâmetros do modelo dentro do
         # Pipeline
         param_grid = {
             'var_threshold__threshold': [1e-4, 0.01, 0.05],
             'feature_selection__k': [1, 2, 'all'],
             # Arquiteturas: 1 camada com 10/50 neurônios ou 2 camadas (20, 10)
-            'mlp__hidden_layer_sizes': [(10,), (20, 10), (50,)],  
+            'mlp__hidden_layer_sizes': [(10,), (20, 10), (50,)],
             # Funções de ativação
-            'mlp__activation': ['relu', 'tanh'],                  
+            'mlp__activation': ['relu', 'tanh'],
             # Otimizadores
-            'mlp__solver': ['adam', 'lbfgs'],                     
+            'mlp__solver': ['adam', 'lbfgs'],
             # Termo de regularização L2 (penalty)
-            'mlp__alpha': [0.0001, 0.01]                          
+            'mlp__alpha': [0.0001, 0.01]
         }
 
         return pipeline, param_grid
@@ -480,7 +477,7 @@ class Classifier:
                 Parâmetros
                 ----------
                 modelo : str
-                    Nome do modelo a ser treinado. Opções: 
+                    Nome do modelo a ser treinado. Opções:
                                     'knn', 'svm', 'rf', 'gbm', 'nb', 'nn'.
                 n_splits : int, opcional
                     Número de divisões para a validação cruzada (default é 3).

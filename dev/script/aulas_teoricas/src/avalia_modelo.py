@@ -3,13 +3,23 @@ import pandas as pd
 from sklearn import metrics
 from scipy.stats import ks_2samp
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, ConfusionMatrixDisplay
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import ConfusionMatrixDisplay
 
 
 class Avalia_modelo:
-
-    def __init__(self, df: pd.DataFrame, indep: pd.Index, modelo, target: str = 'target', troca_classe: bool = False) -> None:
+    '''
+        Classe que avalia o modelo de classificação
+    '''
+    def __init__(
+            self,
+            df: pd.DataFrame,
+            indep: pd.Index,
+            modelo,
+            target: str = 'target',
+            troca_classe: bool = False) -> None:
         self.df = df
         self.target = target
         self.indep = indep
@@ -17,10 +27,14 @@ class Avalia_modelo:
         self.observed = df.loc[:, target]
         self.troca_classe = troca_classe
         if self.troca_classe:
-            self.predito = self.__retorna_classe(modelo.predict(df.loc[:, indep]))
+            self.predito = self.__retorna_classe(
+                                                    modelo.predict(
+                                                        df.loc[:, indep]
+                                                    )
+                                                )
         else:
             self.predito = modelo.predict(df.loc[:, indep])
-    
+
     def __retorna_classe(self, pred: pd.Series) -> list:
         '''
         Função que retorna a classe de predição
@@ -29,7 +43,7 @@ class Avalia_modelo:
         '''
         retorno = [0 if i <= 0.5 else 1 for i in pred]
         return retorno
-    
+
     def __matrix_confusao(self) -> None:
         accuracy = accuracy_score(self.observed, self.predito)
         cm = confusion_matrix(self.observed, self.predito)
@@ -43,7 +57,7 @@ class Avalia_modelo:
         print("\nClassification Report:")
         print(classification_report(self.observed, self.predito))
         return None
-    
+
     def __metricas_pontuais(self) -> None:
         #  Acurácia
         acc = metrics.accuracy_score(self.observed, self.predito)
@@ -57,7 +71,7 @@ class Avalia_modelo:
         # F1-score
         f1_score = metrics.f1_score(self.observed, self.predito)
 
-        #KS
+        # KS
         index = self.df[self.df[self.target] == 1][self.indep]
         if self.troca_classe:
             score_pop1 = self.__retorna_classe(self.modelo.predict(index))
@@ -69,15 +83,15 @@ class Avalia_modelo:
             score_pop2 = self.__retorna_classe(self.modelo.predict(index))
         else:
             score_pop2 = self.modelo.predict(index)
-        
+
         ks = ks_2samp(score_pop1, score_pop2).statistic
-        
-        #AUC
+
+        # AUC
         fpr, tpr, _ = metrics.roc_curve(self.observed, self.predito)
         auc = metrics.auc(fpr, tpr)
 
-        #Gini
-        gini = 2*auc -1
+        # Gini
+        gini = 2*auc - 1
 
         print(pd.DataFrame({
             'Acurácia': [acc],
@@ -90,7 +104,7 @@ class Avalia_modelo:
             }).round(4))
 
         return None
-    
+
     def __grafico_ks(self) -> None:
         # Plotagem da métrica KS (Kolmogorov-Smirnov)
         fig = plt.figure()
@@ -118,9 +132,6 @@ class Avalia_modelo:
         ax.set_ylabel('Função Distribuição Acumulada')
         plt.show()
 
-        # self.predito = retorna_classe(reglog.predict(df))
-        # metricas(y_pred=y_pred, self.observed=df[self.target], target=self.target)
-
         return None
 
     def __curva_roc(self) -> None:
@@ -133,8 +144,13 @@ class Avalia_modelo:
 
         fpr, tpr, _ = metrics.roc_curve(flag_serie, self.predito)
         auc_ = metrics.auc(fpr, tpr)
-        plt.plot(fpr, tpr, color='darkorange',
-                lw=lw, label='ROC curve (area = %0.2f)' % auc_)
+        plt.plot(
+                    fpr,
+                    tpr,
+                    color='darkorange',
+                    lw=lw,
+                    label=f'ROC curve (area = {auc_})'
+                )
         plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
@@ -145,7 +161,7 @@ class Avalia_modelo:
         plt.show()
 
         return None
-    
+
     def metricas(self) -> None:
         '''
             Calcula as métricas pontuais do modelo
