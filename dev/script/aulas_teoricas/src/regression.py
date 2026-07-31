@@ -1,4 +1,5 @@
 # TensorFlow e tf.keras
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import EarlyStopping
@@ -17,6 +18,7 @@ import seaborn as sns
 # Edição das databases
 import pandas as pd
 import numpy as np
+from util import utils as ut
 
 # Seleção de hiperparâmetros e validação cruzada
 from sklearn.model_selection import GridSearchCV
@@ -25,6 +27,7 @@ from sklearn.model_selection import KFold
 # Estruturação dos dados e pré-processamento
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import FunctionTransformer
 from sklearn.compose import ColumnTransformer
 
 # Organização do fluxo de trabalho (Pipeline)
@@ -272,6 +275,9 @@ class Regression:
                 score_func=f_regression,
                 k=min(10, self.X.shape[1])
             )),
+            ('to_tensor', FunctionTransformer(
+                func=lambda x: tf.convert_to_tensor(x, dtype=tf.float32)
+            )),
             ('nn', KerasRegressor(
                                     build_fn=self._neural_network_model,
                                     verbose=0
@@ -314,8 +320,6 @@ class Regression:
             grid_search = RandomizedSearchCV(
                 estimator=estimator,
                 param_distributions=param_grid,
-                # Executará apenas N combinações aleatórias
-                # (ex: 20 em vez de milhares)
                 n_iter=n_iter_search,
                 cv=kf,
                 scoring='neg_mean_squared_error',
@@ -339,12 +343,15 @@ class Regression:
                 min_delta=0.001,
                 restore_best_weights=True
             )
-            grid_search.fit(self.X, self.y, nn__callbacks=[early_stopping])
+            y_fit = self.y.astype(np.float32)
+            grid_search.fit(self.X, y_fit, nn__callbacks=[early_stopping])
         else:
             grid_search.fit(self.X, self.y)
+            
         print("Grid Search concluído.")
         print('='*50)
-        print(f"Melhores parâmetros encontrados: {grid_search.best_params_}")
+        print("Melhores parâmetros encontrados:")
+        ut.printDic(grid_search.best_params_)
         print('='*50)
         self.__variaveis_selecionadas(grid_search=grid_search)
         metricas, y_pred = self.__obter_metricas(
