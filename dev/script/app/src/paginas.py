@@ -9,7 +9,11 @@ from src.acesso_data_test import acesso_data_test
 class Paginas:
     def pagina_estrutura(self) -> str:
         '''
-            Função de inicialização da estrutura da página.
+            Função de estruturação da página inicial.
+            Parametros:
+                self: Referência para a própria classe.
+            Retorna:
+                str: Mensagem de sucesso.
         '''
         st.set_page_config(
             page_title="Alunos",
@@ -26,7 +30,7 @@ class Paginas:
             </style>
             """, unsafe_allow_html=True)
 
-        title = "Página Inicial"
+        title = "Página Inicial - testando upload streamlit"
         st.markdown(
             f"<h1 style='text-align: center; '>{title}</h1>",
             unsafe_allow_html=True
@@ -35,14 +39,22 @@ class Paginas:
 
     def pagina_inicio(self) -> str:
         '''
-            Função de inicialização do pagina_inicial.
+            Função de inicialização da página inicial.
+            Parametros:
+                self: Referência para a própria classe.
+            Retorna:
+                str: Mensagem de sucesso.
         '''
         return "Diga lá loco"
 
     @st.cache_data
     def logo_datalab(_self) -> str:
         '''
-        Função que implementa o Logo do DataLab()
+            Função de inserção do logo do DataLab.
+            Parametros:
+                _self: Referência para a própria classe.
+            Retorna:
+                str: Mensagem de sucesso.
         '''
         data = acesso_data_test()
         data_lab_logo = data
@@ -58,4 +70,5 @@ class Paginas:
         with col_img[1]:
             st.write("DataLab()")
             st.pyplot(fig=plt)
+
         return "Logo Inserido"
