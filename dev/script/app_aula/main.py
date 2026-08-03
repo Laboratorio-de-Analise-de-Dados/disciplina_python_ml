@@ -1,12 +1,4 @@
-def pagina_inicial() -> str:
-    '''
-        Função de inicialização da página inicial.
-        Parametros:
-            None
-        Retorna:
-            str: Mensagem de sucesso.
-    '''
-    return "Página inicial carregada com sucesso."
+from src.paginas import pagina_inicial
 
 if __name__ == "__main__":
     resultado = pagina_inicial()
