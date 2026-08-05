@@ -40,6 +40,14 @@ class Paginas:
             unsafe_allow_html=True
         )
 
+        return "Ajustado"
+
+    def busca_dados(self) -> None:
+        '''
+            Função de busca dos dados de treino e teste.
+            Retorna:
+                None: Não retorna valor.
+        '''
         # Importando os dados de treino e teste
         banco = acesso_data_banco()
         link = banco+"df_estruturada/"
@@ -70,7 +78,7 @@ class Paginas:
             )
             st.dataframe(df_test)
 
-        return "Ajustado"
+        return None
 
     def pagina_inicio(self) -> str:
         '''
