@@ -52,9 +52,8 @@ class Paginas:
                 load(datasets[1]),
                 load(datasets[4])
             ], axis=1)
-            title = "Dados de Treino"
             st.markdown(
-                f"<h4 style='text-align: center; '>{title}</h4>",
+                "<h4 style='text-align: center; '>Dados de Treino</h4>",
                 unsafe_allow_html=True
             )
             st.dataframe(df_train)
@@ -65,9 +64,8 @@ class Paginas:
                 load(datasets[0]),
                 load(datasets[3])
             ], axis=1)
-            title = "Dados de Teste"
             st.markdown(
-                f"<h4 style='text-align: center; '>{title}</h4>",
+                "<h4 style='text-align: center; '>Dados de Teste</h4>",
                 unsafe_allow_html=True
             )
             st.dataframe(df_test)
