@@ -1,4 +1,39 @@
+import os
+
 from src.paginas import Paginas
+from src.acesso_data import acesso_data_test, acesso_data_banco
+
+
+def test_acesso_data_img():
+    # Given
+    teste_remoto = "./dev/script/app/data/img/DataLab_Logo_i.jpg"
+    teste_local = "./app/data/img/DataLab_Logo_i.jpg"
+
+    # When
+    teste_saida = acesso_data_test()
+    if os.path.isfile(teste_local):
+        teste_saida = teste_local
+    else:
+        teste_saida = teste_remoto
+
+    # Then
+    assert teste_local == teste_saida
+
+
+def test_acesso_data_banco():
+    # Given
+    teste_remoto = "./dev/script/app/data/"
+    teste_local = "./app/data/"
+
+    # When
+    teste_saida = acesso_data_banco()
+    if os.path.isdir(teste_local):
+        teste_saida = teste_local
+    else:
+        teste_saida = teste_remoto
+
+    # Then
+    assert teste_local == teste_saida
 
 
 def test_estrutura_pagina():
