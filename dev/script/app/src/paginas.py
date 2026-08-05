@@ -6,7 +6,7 @@ import pandas as pd
 import os
 
 from src.acesso_data import acesso_data_test, acesso_data_banco
-# from src.modelos.clustering import Clustering
+from src.modelos.clustering import Clustering
 
 
 class Paginas:
@@ -45,18 +45,126 @@ class Paginas:
         '''
             Função de busca dos dados de treino e teste.
             Retorna:
-                tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: 
+                tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
                 DataFrames dos datasets de teste, treino e validação.
         '''
         # Importando os dados de treino e teste
         banco = acesso_data_banco()
         link = banco+"df_estruturada/"
         datasets = [link+i for i in os.listdir(link)]
+        df_train = pd.read_csv(datasets[1])
+        df_valid = pd.read_csv(datasets[2])
+        df_test = pd.read_csv(datasets[0])
+
+        return df_train, df_valid, df_test
+
+    def metricas_clustering(self) -> str:
+        '''
+            Função de cálculo das métricas de clustering.
+            Parametros:
+                self: Referência para a própria classe.
+            Retorna:
+                str: Mensagem de sucesso.
+        '''
+        df_train, df_valid, df_test = self.busca_dados()
+
+        # Create a dropdown menu
+        st.sidebar.write("Métricas Clusterização")
+        variavel_1 = st.sidebar.radio(
+            "Primeira variável:",
+            ['PPD_log', 'IFN-γ', 'CD3_2']
+        )
+        variavel_2 = st.sidebar.radio(
+            "Segunda variável:",
+            ['PPD_log', 'IFN-γ', 'CD3_2']
+        )
+
+        resultados = {}
+        col = st.columns((2, .05, 2, .05, 2))
+        with col[0]:
+            # Testando os modelos de clustering via K-means
+            st.write("Métricas de Clustering via K-means:")
+            i = variavel_1
+            j = variavel_2
+            st.write("-"*50)
+            st.write(i, j)
+
+            cluster = Clustering(
+                c1=i,
+                c2=j,
+                df=df_train,
+                modelo='kmeans'
+            )
+            resultados["K-means"] = cluster.testar_modelo(
+                best_param={
+                                'n_clusters': 3,
+                                'init': 'k-means++',
+                                'n_init': 10
+                            },
+                df_test=df_test,
+            )
+
+        with col[2]:
+            # Testando os modelos de clustering via DBSCAN
+            st.write("Métricas de Clustering via DBSCAN:")
+            i = variavel_1
+            j = variavel_2
+            st.write("-"*50)
+            st.write(i, j)
+
+            cluster = Clustering(
+                c1=i,
+                c2=j,
+                df=df_train,
+                modelo='dbscan'
+            )
+            resultados["DBSCAN"] = cluster.testar_modelo(
+                best_param={
+                                'eps': 0.5,
+                                'min_samples': 10,
+                                'metric': 'euclidean'
+                            },
+                df_test=df_test,
+            )
+
+        with col[4]:
+            # Testando os modelos de clustering via Agglomerative
+            st.write("Métricas de Clustering via Agglomerative:")
+            i = variavel_1
+            j = variavel_2
+            st.write("-"*50)
+            st.write(i, j)
+
+            cluster = Clustering(
+                c1=i,
+                c2=j,
+                df=df_train,
+                modelo='agglomerative'
+            )
+            resultados["Agg"] = cluster.testar_modelo(
+                best_param={
+                                'n_clusters': 2,
+                                'metric': 'euclidean',
+                                'linkage': 'average'
+                            },
+                df_test=df_test,
+            )
+
+        st.sidebar.dataframe(
+            pd.DataFrame(
+                columns=['K-means', 'DBSCAN', 'Agglomerative'],
+                index=[''],
+                data=[[
+                    resultados['K-means'],
+                    resultados['DBSCAN'],
+                    resultados['Agg']
+                ]]
+            )
+        )
 
         col = st.columns((2, .05, 2, .05, 2))
         with col[0]:
             # Importando os dados de treino
-            df_train = pd.read_csv(datasets[1])
             st.markdown(
                 "<h4 style='text-align: center; '>Dados de Treino</h4>",
                 unsafe_allow_html=True
@@ -65,7 +173,6 @@ class Paginas:
 
         with col[2]:
             # Importando os dados de validação
-            df_valid = pd.read_csv(datasets[2])
             st.markdown(
                 "<h4 style='text-align: center; '>Dados de Validação</h4>",
                 unsafe_allow_html=True
@@ -74,7 +181,6 @@ class Paginas:
 
         with col[4]:
             # Importando os dados de teste
-            df_test = pd.read_csv(datasets[0])
             st.markdown(
                 "<h4 style='text-align: center; '>Dados de Teste</h4>",
                 unsafe_allow_html=True
@@ -90,7 +196,7 @@ class Paginas:
             st.write("Tamanho dos datasets:")
             st.dataframe(metr)
 
-        return df_train, df_valid, df_test
+        return "Métricas Calculadas"
 
     def pagina_inicio(self) -> str:
         '''

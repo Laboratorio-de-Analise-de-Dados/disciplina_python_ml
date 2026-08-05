@@ -1,3 +1,5 @@
+import streamlit as st
+
 # Métricas de avaliação de clustering
 from sklearn.metrics import silhouette_score
 from sklearn.metrics import calinski_harabasz_score
@@ -400,36 +402,39 @@ class Clustering:
                                         )
 
         # --- Exibição dos Resultados ---
-        print("=" * 50)
-        print(" RESULTADOS DA ANÁLISE DE COMPARAÇÃO DE CLUSTERS")
-        print("=" * 50)
-        print("Frequências Esperadas na Validação (Treino): ")
-        print(f"{expected_val_counts.values}")
-        print("Frequências Observadas na Validação:")
-        print(f"       {observed_val_counts.values}")
-        print("-" * 50)
-        print(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
-        print(f"p-valor:                        {p_value:.4f}")
-        print("-" * 50)
+        st.write("=" * 50)
+        st.write(" RESULTADOS DA ANÁLISE DE COMPARAÇÃO DE CLUSTERS")
+        st.write("=" * 50)
+        st.write("Frequências Esperadas na Validação (Treino): ")
+        st.write(f"{expected_val_counts.values}")
+        st.write("Frequências Observadas na Validação:")
+        st.write(f"       {observed_val_counts.values}")
+        st.write('.')
+        st.write('.')
+        st.write("-" * 50)
+        st.write(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
+        st.write(f"p-valor:                        {p_value:.4f}")
+        st.write("-" * 50)
 
         alpha = 0.05
         if p_value > alpha:
-            print("Conclusão: Não rejeitamos H0.", end=" ")
-            print("A distribuição dos clusters na validação", end=" ")
-            print("É IGUAL à do treino (p > 0.05).")
+            mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
+            mensagem += "clusters na validação É IGUAL à do treino (p > 0.05)."
+            st.write(mensagem)
             retorno = True
         else:
-            print("Conclusão: Rejeitamos H0. ", end=" ")
-            print("A distribuição dos clusters na validação", end=" ")
-            print("É DIFERENTE da do treino (p <= 0.05).")
+            mensagem = "Conclusão: Rejeitamos H0. "
+            mensagem += "A distribuição dos clusters na validação "
+            mensagem += "É DIFERENTE da do treino (p <= 0.05)."
+            st.write(mensagem)
             retorno = False
 
-        print("-" * 50)
+        st.write("-" * 50)
         mensagem = "Adjusted Rand Index (ARI) entre modelo de Treino e modelo "
         mensagem += f"da Validação: {ari_score:.4f} (ARI próximo de 1.0"
         mensagem += " indica que a partição geométrica gerada é"
         mensagem += " virtualmente idêntica)"
-        print(mensagem)
+        st.write(mensagem)
 
         return retorno
 
@@ -520,35 +525,39 @@ class Clustering:
                                         )
 
         # --- Exibição dos Resultados ---
-        print("=" * 55)
-        print(" RESULTADOS DA COMPARAÇÃO DE CLUSTERS (DBSCAN)")
-        print("=" * 55)
-        print("Clusters identificados no Treino:       ")
-        print(f"{np.unique(labels_train)}")
-        print("Frequências Esperadas na Validação:     ")
-        print(f"{expected_val_counts.values.round(2)}")
-        print("Frequências Observadas na Validação:    ")
-        print(f"{observed_val_counts.values}")
-        print("-" * 55)
-        print(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
-        print(f"p-valor:                        {p_value:.4f}")
-        print("-" * 55)
+        st.write("=" * 55)
+        st.write(" RESULTADOS DA COMPARAÇÃO DE CLUSTERS (DBSCAN)")
+        st.write("=" * 55)
+        st.write("Clusters identificados no Treino:       ")
+        st.write(f"{np.unique(labels_train)}")
+        st.write("Frequências Esperadas na Validação:     ")
+        st.write(f"{expected_val_counts.values.round(2)}")
+        st.write("Frequências Observadas na Validação:    ")
+        st.write(f"{observed_val_counts.values}")
+        st.write("-" * 55)
+        st.write(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
+        st.write(f"p-valor:                        {p_value:.4f}")
+        st.write("-" * 55)
 
         alpha = 0.05
         if p_value > alpha:
-            print("Conclusão: Não rejeitamos H0. A distribuição dos clusters")
-            print("na validação É IGUAL à do treino (p > 0.05).")
+            mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
+            mensagem += "clusters na validação É IGUAL à do treino (p > 0.05)."
+            st.write(mensagem)
             retorno = True
         else:
-            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos "
-            mensagem += "clusters na validação É DIFERENTE da do treino  "
-            mensagem += "(p <= 0.05)."
-            print(mensagem)
+            mensagem = "Conclusão: Rejeitamos H0. "
+            mensagem += "A distribuição dos clusters na validação "
+            mensagem += "É DIFERENTE da do treino (p <= 0.05)."
+            st.write(mensagem)
             retorno = False
 
-        print("-" * 55)
-        print(f"Adjusted Rand Index (ARI) entre predição e DBSCAN direto na "
-              f"Validação: {ari_score:.4f}")
+        st.write("-" * 55)
+        mensagem = "Adjusted Rand Index (ARI) entre modelo de Treino e modelo "
+        mensagem += f"da Validação: {ari_score:.4f} (ARI próximo de 1.0"
+        mensagem += " indica que a partição geométrica gerada é"
+        mensagem += " virtualmente idêntica)"
+        st.write(mensagem)
 
         return retorno
 
@@ -639,35 +648,39 @@ class Clustering:
                                         )
 
         # --- Exibição dos Resultados ---
-        print("=" * 60)
-        print(" RESULTADOS DA COMPARAÇÃO (AGGLOMERATIVE CLUSTERING)")
-        print("=" * 60)
-        print("Clusters no Treino:                  ")
-        print(f"{all_clusters}")
-        print("Frequências Esperadas na Validação:  ")
-        print(f"{expected_val_counts.values.round(2)}")
-        print("Frequências Observadas na Validação:  ")
-        print(f"{observed_val_counts.values}")
-        print("-" * 60)
-        print(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
-        print(f"p-valor:                        {p_value:.4f}")
-        print("-" * 60)
+        st.write("=" * 60)
+        st.write(" RESULTADOS DA COMPARAÇÃO (AGGLOMERATIVE CLUSTERING)")
+        st.write("=" * 60)
+        st.write("Clusters no Treino:                  ")
+        st.write(f"{all_clusters}")
+        st.write("Frequências Esperadas na Validação:  ")
+        st.write(f"{expected_val_counts.values.round(2)}")
+        st.write("Frequências Observadas na Validação:  ")
+        st.write(f"{observed_val_counts.values}")
+        st.write("-" * 60)
+        st.write(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
+        st.write(f"p-valor:                        {p_value:.4f}")
+        st.write("-" * 60)
 
         alpha = 0.05
         if p_value > alpha:
             mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
             mensagem += "clusters na validação É IGUAL à do treino (p > 0.05)."
-            print(mensagem)
+            st.write(mensagem)
             retorno = True
         else:
-            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos clusters "
-            mensagem += "na validação É DIFERENTE da do treino (p <= 0.05)."
-            print(mensagem)
+            mensagem = "Conclusão: Rejeitamos H0. "
+            mensagem += "A distribuição dos clusters na validação "
+            mensagem += "É DIFERENTE da do treino (p <= 0.05)."
+            st.write(mensagem)
             retorno = False
 
-        print("-" * 60)
-        print(f"Adjusted Rand Index (ARI) entre projeção e agrupamento "
-              f"direto: {ari_score:.4f}")
+        st.write("-" * 60)
+        mensagem = "Adjusted Rand Index (ARI) entre modelo de Treino e modelo "
+        mensagem += f"da Validação: {ari_score:.4f} (ARI próximo de 1.0"
+        mensagem += " indica que a partição geométrica gerada é"
+        mensagem += " virtualmente idêntica)"
+        st.write(mensagem)
 
         return retorno
 

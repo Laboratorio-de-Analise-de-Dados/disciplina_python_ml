@@ -30,6 +30,34 @@ def test_acesso_data_banco():
     assert teste_local == teste_saida
 
 
+def test_busca_dados():
+    # Given
+    teste_entrada = 3
+
+    # When
+    iniciando = Paginas()
+    df_train, df_valid, df_test = iniciando.busca_dados()
+    teste_saida = len([df_train, df_valid, df_test])
+
+    # Then
+    if "./app/data/" == acesso_data_banco():
+        assert teste_entrada == teste_saida
+    else:
+        assert teste_entrada != teste_saida
+
+
+def test_metricas_clustering():
+    # Given
+    teste_entrada = "Métricas Calculadas"
+
+    # When
+    iniciando = Paginas()
+    teste_saida = iniciando.metricas_clustering()
+
+    # Then
+    assert teste_entrada == teste_saida
+
+
 def test_estrutura_pagina():
     # Given
     teste_entrada = "Ajustado"
