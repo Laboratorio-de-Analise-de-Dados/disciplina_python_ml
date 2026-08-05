@@ -41,7 +41,7 @@ class Paginas:
 
         return "Ajustado"
 
-    def busca_dados(self) -> tuple[int, int, int]:
+    def busca_dados(self) -> list:
         '''
             Função de busca dos dados de treino e teste.
             Retorna:
@@ -90,7 +90,7 @@ class Paginas:
             st.write("Tamanho dos datasets:")
             st.dataframe(metr)
 
-        return metr.iloc[0, 1], metr.iloc[1, 1], metr.iloc[2, 1]
+        return datasets
 
     def pagina_inicio(self) -> str:
         '''

@@ -32,7 +32,10 @@ def test_acesso_data_banco():
 
 def test_busca_dados():
     # Given
-    teste_entrada = (700, 200, 100)
+    # Importando os dados de treino e teste
+    banco = acesso_data_banco()
+    link = banco+"df_estruturada/"
+    teste_entrada = [link+i for i in os.listdir(link)]
 
     # When
     iniciando = Paginas()
