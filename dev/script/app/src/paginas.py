@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import pandas as pd
 import os
-from joblib import load
 
 from src.acesso_data import acesso_data_test, acesso_data_banco
 # from src.modelos.clustering import Clustering
@@ -42,24 +41,22 @@ class Paginas:
 
         return "Ajustado"
 
-    def busca_dados(self) -> None:
+    def busca_dados(self) -> tuple[int, int, int]:
         '''
             Função de busca dos dados de treino e teste.
             Retorna:
-                None: Não retorna valor.
+                tuple[int, int, int]: Tamanhos dos datasets de teste,
+                treino e validação.
         '''
         # Importando os dados de treino e teste
         banco = acesso_data_banco()
         link = banco+"df_estruturada/"
         datasets = [link+i for i in os.listdir(link)]
 
-        col = st.columns((2, .05, 2))
+        col = st.columns((2, .05, 2, .05, 2))
         with col[0]:
             # Importando os dados de treino
-            df_train = pd.concat([
-                load(datasets[1]),
-                load(datasets[4])
-            ], axis=1)
+            df_train = pd.read_csv(datasets[1])
             st.markdown(
                 "<h4 style='text-align: center; '>Dados de Treino</h4>",
                 unsafe_allow_html=True
@@ -67,18 +64,33 @@ class Paginas:
             st.dataframe(df_train)
 
         with col[2]:
+            # Importando os dados de validação
+            df_valid = pd.read_csv(datasets[2])
+            st.markdown(
+                "<h4 style='text-align: center; '>Dados de Validação</h4>",
+                unsafe_allow_html=True
+            )
+            st.dataframe(df_valid)
+
+        with col[4]:
             # Importando os dados de teste
-            df_test = pd.concat([
-                load(datasets[0]),
-                load(datasets[3])
-            ], axis=1)
+            df_test = pd.read_csv(datasets[0])
             st.markdown(
                 "<h4 style='text-align: center; '>Dados de Teste</h4>",
                 unsafe_allow_html=True
             )
             st.dataframe(df_test)
 
-        return None
+        col = st.columns((2, 10))
+        with col[0]:
+            metr = pd.DataFrame({
+                "Métrica": ["Treino", "Validação", "Teste"],
+                "Tamanho": [len(df_train), len(df_valid), len(df_test)]
+            })
+            st.write("Tamanho dos datasets:")
+            st.dataframe(metr)
+
+        return metr.iloc[0, 1], metr.iloc[1, 1], metr.iloc[2, 1]
 
     def pagina_inicio(self) -> str:
         '''

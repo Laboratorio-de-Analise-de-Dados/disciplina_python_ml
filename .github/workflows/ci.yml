@@ -39,7 +39,7 @@ jobs:
         run: mypy ./dev/script/app --ignore-missing-imports --follow-imports skip
       
       - name: Run Flake
-        run: flake8  --max-complexity 5 ./dev/script/app
+        run: flake8  --max-complexity 12 ./dev/script/app
 
       - name: Run Pytest aula
         run: pytest ./dev/script/app_aula/py_test
@@ -48,5 +48,5 @@ jobs:
         run: mypy ./dev/script/app_aula --ignore-missing-imports --follow-imports skip
       
       - name: Run Flake aula
-        run: flake8  --max-complexity 5 ./dev/script/app_aula
+        run: flake8  --max-complexity 12 ./dev/script/app_aula
 

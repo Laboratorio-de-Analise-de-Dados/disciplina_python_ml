@@ -30,6 +30,18 @@ def test_acesso_data_banco():
     assert teste_local == teste_saida
 
 
+def test_busca_dados():
+    # Given
+    teste_entrada = (700, 200, 100)
+
+    # When
+    iniciando = Paginas()
+    teste_saida = iniciando.busca_dados()
+
+    # Then
+    assert teste_entrada == teste_saida
+
+
 def test_estrutura_pagina():
     # Given
     teste_entrada = "Ajustado"
