@@ -6,7 +6,7 @@ import pandas as pd
 import os
 from joblib import load
 
-from src.acesso_data_test import acesso_data_test
+from src.acesso_data import acesso_data_test, acesso_data_banco
 # from src.modelos.clustering import Clustering
 
 
@@ -41,7 +41,8 @@ class Paginas:
         )
 
         # Importando os dados de treino e teste
-        link = "./app/data/df_estruturada/"
+        banco = acesso_data_banco()
+        link = banco+"df_estruturada/"
         datasets = [link+i for i in os.listdir(link)]
 
         col = st.columns((2, .05, 2))
