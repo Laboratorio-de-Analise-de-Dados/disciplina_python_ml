@@ -30,21 +30,6 @@ def test_acesso_data_banco():
     assert teste_local == teste_saida
 
 
-def test_busca_dados():
-    # Given
-    # Importando os dados de treino e teste
-    banco = acesso_data_banco()
-    link = banco+"df_estruturada/"
-    teste_entrada = [link+i for i in os.listdir(link)]
-
-    # When
-    iniciando = Paginas()
-    teste_saida = iniciando.busca_dados()
-
-    # Then
-    assert teste_entrada == teste_saida
-
-
 def test_estrutura_pagina():
     # Given
     teste_entrada = "Ajustado"

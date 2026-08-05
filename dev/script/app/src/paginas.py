@@ -41,12 +41,12 @@ class Paginas:
 
         return "Ajustado"
 
-    def busca_dados(self) -> list:
+    def busca_dados(self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         '''
             Função de busca dos dados de treino e teste.
             Retorna:
-                tuple[int, int, int]: Tamanhos dos datasets de teste,
-                treino e validação.
+                tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: 
+                DataFrames dos datasets de teste, treino e validação.
         '''
         # Importando os dados de treino e teste
         banco = acesso_data_banco()
@@ -90,7 +90,7 @@ class Paginas:
             st.write("Tamanho dos datasets:")
             st.dataframe(metr)
 
-        return datasets
+        return df_train, df_valid, df_test
 
     def pagina_inicio(self) -> str:
         '''
