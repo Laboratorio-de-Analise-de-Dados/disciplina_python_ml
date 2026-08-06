@@ -35,8 +35,6 @@ def test_busca_dados():
     teste_entrada = 3
 
     # When
-    # teste_saida = 3
-    # if "./app/data/" == acesso_data_banco():
     iniciando = Paginas()
     df_train, df_valid, df_test = iniciando.busca_dados()
     teste_saida = len([df_train, df_valid, df_test])
@@ -50,8 +48,6 @@ def test_metricas_clustering():
     teste_entrada = "Métricas Calculadas"
 
     # When
-    # teste_saida = "Métricas Calculadas"
-    # if "./app/data/" == acesso_data_banco():
     iniciando = Paginas()
     teste_saida = iniciando.metricas_clustering()
 

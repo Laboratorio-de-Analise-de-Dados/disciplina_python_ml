@@ -1,5 +1,4 @@
 # Métricas de avaliação de clustering
-from sklearn.metrics import silhouette_score
 from sklearn.metrics import adjusted_rand_score
 
 # Bibliotecas para clustering
@@ -15,24 +14,6 @@ import pandas as pd
 
 # Geração de gráficos
 import seaborn as sns
-
-
-def silhouette_scorer_func(estimator, X) -> float:
-    '''
-        Função para calcular a pontuação de Silhouette para um estimador de
-        clustering.
-            Parâmetros:
-                estimator: Estimador de clustering (ex: KMeans)
-                X: Dados de entrada para o cálculo da pontuação
-            Retorna:
-                float: Pontuação de Silhouette média para os dados fornecidos
-    '''
-    labels = estimator.fit_predict(X)
-    # Silhouette precisa de pelo menos 2 clusters distintos no conjunto
-    # de validação
-    if len(np.unique(labels)) > 1:
-        return silhouette_score(X, labels)
-    return -1.0  # Retorna pontuação baixa caso haja falha de separação no fold
 
 
 class Clustering:
@@ -157,31 +138,35 @@ class Clustering:
         msn_resul += '<br>'
         msn_resul += "<h6 style='text-align: center;'>K-means</h6>"
         msn_resul += "=" * 50 + "<br>"
+        msn_resul += "Clusters identificados no Treino:       "
+        msn_resul += f"{np.unique(labels_train)}<br><br>"
         msn_resul += "Frequências Esperadas na Validação (Treino): <br>"
         msn_resul += f"{expected_val_counts.values}<br><br>"
         msn_resul += "Frequências Observadas na Validação: <br>"
         msn_resul += f"       {observed_val_counts.values}<br>"
-        msn_resul += "<br>"
         msn_resul += "-" * 50 + "<br>"
         msn_resul += f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}<br>"
         msn_resul += f"p-valor:                        {p_value:.4f}<br>"
         msn_resul += "-" * 50 + "<br>"
+        msn_resul += "<br>"
 
         if p_value > 0.05:
-            mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
+            mensagem = "Conclusão 1: Não rejeitamos H0. A distribuição dos "
             mensagem += "clusters na validação "
             mensagem += "<b style='color: green;'>É IGUAL</b>"
             mensagem += " à do treino (p > 0.05)."
             mensagem += "<br>"
             msn_resul += mensagem
         else:
-            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos "
+            mensagem = "Conclusão:  2Rejeitamos H0. A distribuição dos "
             mensagem += "clusters na validação "
             mensagem += "<b style='color: red;'>É DIFERENTE</b>"
             mensagem += " da do treino (p <= 0.05)."
             mensagem += "<br>"
             msn_resul += mensagem
         msn_resul += "<br>" + "-" * 50 + "<br>"
+        msn_resul += "<br>"
+
         if ari_score > 0.5:
             mensagem = "Conclusão: O modelo de clustering do Treino e o "
             mensagem += "modelo da Validação "
@@ -197,6 +182,7 @@ class Clustering:
             mensagem += "<br>"
             msn_resul += mensagem
 
+        msn_resul += "<br>"
         grafico = self.grafico_scatter(
                                         hue=labels_val_predicted,
                                         df_grafico=df_test
@@ -296,30 +282,33 @@ class Clustering:
         msn_resul += "=" * 50 + "<br>"
         msn_resul += "Clusters identificados no Treino:       "
         msn_resul += f"{np.unique(labels_train)}<br><br>"
-        msn_resul += "Frequências Esperadas na Validação:     "
-        msn_resul += f"{expected_val_counts.values.round(2)}<br><br>"
-        msn_resul += "Frequências Observadas na Validação:    "
-        msn_resul += f"{observed_val_counts.values}<br><br>"
+        msn_resul += "Frequências Esperadas na Validação (Treino): <br>"
+        msn_resul += f"{expected_val_counts.values}<br><br>"
+        msn_resul += "Frequências Observadas na Validação: <br>"
+        msn_resul += f"       {observed_val_counts.values}<br>"
         msn_resul += "-" * 50 + "<br>"
         msn_resul += f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}<br>"
         msn_resul += f"p-valor:                        {p_value:.4f}<br>"
         msn_resul += "-" * 50 + "<br>"
+        msn_resul += "<br>"
 
         if p_value > 0.05:
-            mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
+            mensagem = "Conclusão 1: Não rejeitamos H0. A distribuição dos "
             mensagem += "clusters na validação "
             mensagem += "<b style='color: green;'>É IGUAL</b>"
             mensagem += " à do treino (p > 0.05)."
             mensagem += "<br>"
             msn_resul += mensagem
         else:
-            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos "
+            mensagem = "Conclusão:  2Rejeitamos H0. A distribuição dos "
             mensagem += "clusters na validação "
             mensagem += "<b style='color: red;'>É DIFERENTE</b>"
             mensagem += " da do treino (p <= 0.05)."
             mensagem += "<br>"
             msn_resul += mensagem
         msn_resul += "<br>" + "-" * 50 + "<br>"
+        msn_resul += "<br>"
+
         if ari_score > 0.5:
             mensagem = "Conclusão: O modelo de clustering do Treino e o "
             mensagem += "modelo da Validação "
@@ -335,6 +324,7 @@ class Clustering:
             mensagem += "<br>"
             msn_resul += mensagem
 
+        msn_resul += "<br>"
         grafico = self.grafico_scatter(
                                         hue=labels_val_predicted,
                                         df_grafico=df_test
@@ -432,32 +422,35 @@ class Clustering:
         msn_resul = "=" * 50 + "<br>"
         msn_resul += "<h6 style='text-align: center;'>AGGLOMERATIVE</h6>"
         msn_resul += "=" * 50 + "<br>"
-        msn_resul += "Clusters no Treino:                  "
-        msn_resul += f"{all_clusters}<br><br>"
-        msn_resul += "Frequências Esperadas na Validação:  "
-        msn_resul += f"{expected_val_counts.values.round(2)}<br><br>"
-        msn_resul += "Frequências Observadas na Validação:  "
-        msn_resul += f"{observed_val_counts.values}<br><br>"
+        msn_resul += "Clusters identificados no Treino:       "
+        msn_resul += f"{np.unique(labels_train)}<br><br>"
+        msn_resul += "Frequências Esperadas na Validação (Treino): <br>"
+        msn_resul += f"{expected_val_counts.values}<br><br>"
+        msn_resul += "Frequências Observadas na Validação: <br>"
+        msn_resul += f"       {observed_val_counts.values}<br>"
         msn_resul += "-" * 50 + "<br>"
         msn_resul += f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}<br>"
         msn_resul += f"p-valor:                        {p_value:.4f}<br>"
         msn_resul += "-" * 50 + "<br>"
+        msn_resul += "<br>"
 
         if p_value > 0.05:
-            mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
+            mensagem = "Conclusão 1: Não rejeitamos H0. A distribuição dos "
             mensagem += "clusters na validação "
             mensagem += "<b style='color: green;'>É IGUAL</b>"
             mensagem += " à do treino (p > 0.05)."
             mensagem += "<br>"
             msn_resul += mensagem
         else:
-            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos "
+            mensagem = "Conclusão 2: Rejeitamos H0. A distribuição dos "
             mensagem += "clusters na validação "
             mensagem += "<b style='color: red;'>É DIFERENTE</b>"
             mensagem += " da do treino (p <= 0.05)."
             mensagem += "<br>"
             msn_resul += mensagem
         msn_resul += "<br>" + "-" * 50 + "<br>"
+        msn_resul += "<br>"
+
         if ari_score > 0.5:
             mensagem = "Conclusão: O modelo de clustering do Treino e o "
             mensagem += "modelo da Validação "
@@ -473,6 +466,7 @@ class Clustering:
             mensagem += "<br>"
             msn_resul += mensagem
 
+        msn_resul += "<br>"
         grafico = self.grafico_scatter(
                                         hue=labels_val_predicted,
                                         df_grafico=df_test
