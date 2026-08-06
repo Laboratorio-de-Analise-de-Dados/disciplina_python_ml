@@ -1,16 +1,9 @@
-import streamlit as st
-
 # Métricas de avaliação de clustering
 from sklearn.metrics import silhouette_score
-from sklearn.metrics import calinski_harabasz_score
-from sklearn.metrics import davies_bouldin_score
 from sklearn.metrics import adjusted_rand_score
-from sklearn.metrics import adjusted_mutual_info_score
 
 # Bibliotecas para clustering
 from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import KFold, cross_val_score
 
 # Testagem dos modelos
 from scipy.stats import chisquare
@@ -21,7 +14,6 @@ import numpy as np
 import pandas as pd
 
 # Geração de gráficos
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 
@@ -60,51 +52,10 @@ class Clustering:
 
         return None
 
-    def __calcular_metricas(
+    def grafico_scatter(
             self,
-            X_scaled: np.ndarray,
-            pred: np.ndarray,
-            obs: np.ndarray) -> tuple:
-        '''
-            Função para calcular métricas de avaliação de clustering.
-                Parâmetros:
-                    X_scaled: np.array - Dados escalonados utilizados para o
-                    clustering
-                    pred: np.array - Rótulos previstos pelo modelo de
-                    clustering
-                    obs: np.array - Rótulos observados (verdadeiros) para
-                    comparação
-                Retorna:
-                    None - Apenas imprime as métricas calculadas
-        '''
-        ss = np.nan
-        chs = np.nan
-        dbs = np.nan
-        ari = np.nan
-        ami = np.nan
-
-        try:
-            # Calcula a métrica de Silhouette
-            ss = round(silhouette_score(X_scaled, pred), 3)
-            # Calcula a métrica de Calinski-Harabasz
-            chs = round(calinski_harabasz_score(X_scaled, pred), 3)
-
-            # Calcula a métrica de Davies-Bouldin
-            dbs = round(davies_bouldin_score(X_scaled, pred), 3)
-
-            # Calcula a métrica de Adjusted Rand Score
-            ari = round(adjusted_rand_score(obs, pred), 3)
-
-            # Calcula a métrica de Adjusted Mutual Info Score
-            ami = round(adjusted_mutual_info_score(obs, pred), 3)
-        except Exception:
-            pass
-
-        return (ss, chs, dbs, ari, ami)
-
-    def __grafico_scatter(
-            self,
-            hue: str | list | np.ndarray) -> None:
+            hue: str | list | np.ndarray,
+            df_grafico: pd.DataFrame) -> sns.JointGrid:
         '''
             Função para gerar um gráfico de dispersão (scatter plot) com base
             em duas variáveis e uma variável de agrupamento (hue).
@@ -113,7 +64,7 @@ class Clustering:
                                             array contendo os valores para
                                             colorir os pontos no gráfico.
                 Retorna:
-                    None - Apenas exibe o gráfico gerado.
+                    sns.JointGrid - Objeto do gráfico gerado.
         '''
         # Gráfico de correlação neutra entre os dados
         p = sns.jointplot(
@@ -123,229 +74,29 @@ class Clustering:
             height=6,
             ratio=4,
             marginal_ticks=True,
-            data=self.df,
+            data=df_grafico,
         )
         p.fig.suptitle("Correlação Variáveis Discretas", y=1.02)
         p.set_axis_labels(
             xlabel=self.c1,
             ylabel=self.c2
         )
-        return None
-
-    def __grafico_box(
-            self,
-            cluster_labels: np.ndarray) -> None:
-        _, ax = plt.subplots(1, 2, figsize=(13, 5))
-        plt.suptitle('Diferença das classes clusterizadas')
-        g = sns.boxplot(
-            x=cluster_labels,
-            y=self.c1,
-            data=self.df,
-            ax=ax[0]
-        )
-        g.set(
-            title=f' {self.c1} para Clusters',
-            # xlabel = cluster_labels,
-            ylabel=self.c1,
-        )
-        g = sns.boxplot(
-            x=cluster_labels,
-            y=self.c2,
-            data=self.df,
-            ax=ax[1]
-        )
-        g.set(
-            title=f' {self.c2} para Clusters',
-            # xlabel = cluster_labels,
-            ylabel=self.c2,
-        )
-
-        return None
-
-    def __param_grid(self) -> dict:
-        if self.modelo == 'kmeans':
-            retorno = {
-                        "n_clusters": [2, 3, 4, 5, 6],
-                        "init": ["k-means++", "random"],
-                        "n_init": ['auto', 10, 20, 30],
-                    }
-        elif self.modelo == 'dbscan':
-            retorno = {
-                        "eps": [0.1, 0.2, 0.3, 0.4, 0.5],
-                        "min_samples": [3, 5, 10, 15],
-                        "metric": ["euclidean", "manhattan"],
-                    }
-        elif self.modelo == 'agglomerative':
-            retorno = {
-                        "n_clusters": [2, 3, 4, 5, 6],
-                        "metric": ['euclidean'],
-                        "linkage": ["ward", "complete", "average", "single"],
-                    }
-        return retorno
-
-    def cross_validation(
-                self,
-                n_splits: int = 5,
-                random_state: int = 42,
-                print_metricas: bool = True
-            ) -> None | tuple:
-        '''
-            Função para realizar validação cruzada utilizando a pontuação de
-            Silhouette para um par de variáveis em um DataFrame.
-                Parâmetros:
-                    self.c1: str - Nome da primeira variável
-                    self.c2: str - Nome da segunda variável
-                    self.df: pd.DataFrame - DataFrame contendo as variáveis
-                    n_splits: int - Número de folds para a validação cruzada.
-                                    Default é 5.
-                    random_state: int - Semente para reprodução dos resultados.
-                                    Default é 42.
-                    print_metricas: bool - Se True, imprime as métricas de
-                                    avaliação do clustering. Default é True.
-                Retorna:
-                    None
-        '''
-        # Preparação dos Dados Sintéticos
-        X_raw = self.df[[self.c1, self.c2]]
-
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(X_raw)
-
-        # Grid Search Manual integrando cross_val_score
-
-        kf = KFold(
-            n_splits=n_splits,
-            shuffle=True,
-            random_state=random_state
-        )
-
-        best_score = -1.0
-        best_params = {}
-        results = []
-
-        param_grid = self.__param_grid()
-        param_grid_keys = list(param_grid.keys())
-        # Iteração sobre a grade de hiperparâmetros
-        for a in param_grid[param_grid_keys[0]]:
-            for b in param_grid[param_grid_keys[1]]:
-                for c in param_grid[param_grid_keys[2]]:
-
-                    if self.modelo == 'kmeans':
-                        # Instância do modelo com a combinação atual
-                        model = KMeans(
-                            n_clusters=a,
-                            init=b,
-                            n_init=c,
-                            random_state=random_state,
-                        )
-                    elif self.modelo == 'dbscan':
-                        # Instância do modelo com a combinação atual
-                        model = DBSCAN(
-                            eps=a,
-                            min_samples=b,
-                            metric=c,
-                            n_jobs=-1
-                        )
-                    elif self.modelo == 'agglomerative':
-                        model = AgglomerativeClustering(
-                            n_clusters=a,
-                            metric=b,
-                            linkage=c,
-                        )
-                    # Execução do cross_val_score do scikit-learn
-                    scores = cross_val_score(
-                        estimator=model,
-                        X=X_scaled,
-                        cv=kf,
-                        # Usando a função scorer
-                        scoring=silhouette_scorer_func,
-                        n_jobs=-1,  # Paralelização dos folds
-                    )
-
-                    mean_score = np.mean(scores)
-                    std_score = np.std(scores)
-
-                    results.append(
-                        {
-                            param_grid_keys[0]: a,
-                            param_grid_keys[1]: b,
-                            param_grid_keys[2]: c,
-                            "mean_score": mean_score,
-                            "std_score": std_score,
-                        }
-                    )
-
-                    if mean_score > best_score:
-                        best_score = float(mean_score)
-                        best_params = {
-                            param_grid_keys[0]: a,
-                            param_grid_keys[1]: b,
-                            param_grid_keys[2]: c,
-                        }
-
-        # Treinamento do modelo final no dataset completo com os melhores
-        # hiperparâmetros
-        if self.modelo == 'kmeans':
-            best_model = KMeans(**best_params, random_state=random_state)
-        elif self.modelo == 'dbscan':
-            best_model = DBSCAN(**best_params, n_jobs=-1)
-        elif self.modelo == 'agglomerative':
-            best_model = AgglomerativeClustering(**best_params)
-
-        cluster_labels = best_model.fit_predict(X_scaled)
-
-        # Mostra as métricas de avaliação do clustering
-        metricas = {
-            'X_scaled': X_scaled,
-            'pred': cluster_labels,
-            'obs': np.array(self.df['classe'].values)
-        }
-        if print_metricas:
-            # Resultados e Ajuste Final
-            print("=== MELHOR CONFIGURAÇÃO ENCONTRADA VIA cross_val_score ===")
-            print(f"Parâmetros: {best_params}")
-            print(f"Silhouette Score Médio (CV): {best_score:.4f}\n")
-
-            # Calcular métricas de avaliação do clustering com os melhores
-            # hiperparâmetros
-
-            ss, chs, dbs, ari, ami = self.__calcular_metricas(**metricas)
-            print(f"Silhouette Score -> {ss}")
-            print(f"Calinski Harabasz Score -> {chs}")
-            print(f"Davies Bouldin Score -> {dbs}")
-            print(f"Adjusted Rand Score -> {ari}")
-            print(f"Adjusted Mutual Info Score -> {ami}")
-
-            # Graficos de relação entre as variáveis e os clusters
-            self.__grafico_scatter(hue='classe')
-            self.__grafico_scatter(hue=cluster_labels)
-            self.__grafico_box(cluster_labels=cluster_labels)
-            plt.show()
-
-            return None
-        return cluster_labels, self.__calcular_metricas(**metricas)
+        return p
 
     def __testar_kmeans(
             self,
             best_param: dict,
-            df_test: pd.DataFrame) -> bool:
+            df_test: pd.DataFrame) -> tuple[sns.JointGrid, str]:
         '''
             Função para testar a consistência dos clusters obtidos no conjunto
             de treino com os clusters obtidos no conjunto de validação,
             utilizando o teste Qui-Quadrado de Aderência e o
             Índice de Rand Ajustado (ARI).
                 Parâmetros:
-                    self.c1: str - Nome da primeira variável a ser utilizada
-                    no clustering.
-                    self.c2: str - Nome da segunda variável a ser utilizada
-                    no clustering.
                     best_param: dict
                         Dicionário contendo os melhores parâmetros para
                         o modelo
                         de clustering.
-                    self.df: pd.DataFrame, opcional
-                        DataFrame contendo os dados de treino. Padrão
-                        é self.df.
                     df_test: pd.DataFrame, opcional
                         DataFrame contendo os dados de validação. Padrão
                         é df_test.
@@ -402,46 +153,61 @@ class Clustering:
                                         )
 
         # --- Exibição dos Resultados ---
-        st.write("=" * 50)
-        st.write(" RESULTADOS DA ANÁLISE DE COMPARAÇÃO DE CLUSTERS")
-        st.write("=" * 50)
-        st.write("Frequências Esperadas na Validação (Treino): ")
-        st.write(f"{expected_val_counts.values}")
-        st.write("Frequências Observadas na Validação:")
-        st.write(f"       {observed_val_counts.values}")
-        st.write('.')
-        st.write('.')
-        st.write("-" * 50)
-        st.write(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
-        st.write(f"p-valor:                        {p_value:.4f}")
-        st.write("-" * 50)
+        msn_resul = "=" * 50
+        msn_resul += '<br>'
+        msn_resul += "<h6 style='text-align: center;'>K-means</h6>"
+        msn_resul += "=" * 50 + "<br>"
+        msn_resul += "Frequências Esperadas na Validação (Treino): <br>"
+        msn_resul += f"{expected_val_counts.values}<br><br>"
+        msn_resul += "Frequências Observadas na Validação: <br>"
+        msn_resul += f"       {observed_val_counts.values}<br>"
+        msn_resul += "<br>"
+        msn_resul += "-" * 50 + "<br>"
+        msn_resul += f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}<br>"
+        msn_resul += f"p-valor:                        {p_value:.4f}<br>"
+        msn_resul += "-" * 50 + "<br>"
 
-        alpha = 0.05
-        if p_value > alpha:
+        if p_value > 0.05:
             mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
-            mensagem += "clusters na validação É IGUAL à do treino (p > 0.05)."
-            st.write(mensagem)
-            retorno = True
+            mensagem += "clusters na validação "
+            mensagem += "<b style='color: green;'>É IGUAL</b>"
+            mensagem += " à do treino (p > 0.05)."
+            mensagem += "<br>"
+            msn_resul += mensagem
         else:
-            mensagem = "Conclusão: Rejeitamos H0. "
-            mensagem += "A distribuição dos clusters na validação "
-            mensagem += "É DIFERENTE da do treino (p <= 0.05)."
-            st.write(mensagem)
-            retorno = False
+            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos "
+            mensagem += "clusters na validação "
+            mensagem += "<b style='color: red;'>É DIFERENTE</b>"
+            mensagem += " da do treino (p <= 0.05)."
+            mensagem += "<br>"
+            msn_resul += mensagem
+        msn_resul += "<br>" + "-" * 50 + "<br>"
+        if ari_score > 0.5:
+            mensagem = "Conclusão: O modelo de clustering do Treino e o "
+            mensagem += "modelo da Validação "
+            mensagem += "<b style='color: green;'>SÃO SEMELHANTES</b>"
+            mensagem += f" (ARI = {ari_score:.4f})."
+            mensagem += "<br>"
+            msn_resul += mensagem
+        else:
+            mensagem = "Conclusão: O modelo de clustering do Treino e o "
+            mensagem += "modelo da Validação "
+            mensagem += "<b style='color: red;'>NÃO SÃO SEMELHANTES</b>"
+            mensagem += f" (ARI = {ari_score:.4f})."
+            mensagem += "<br>"
+            msn_resul += mensagem
 
-        st.write("-" * 50)
-        mensagem = "Adjusted Rand Index (ARI) entre modelo de Treino e modelo "
-        mensagem += f"da Validação: {ari_score:.4f} (ARI próximo de 1.0"
-        mensagem += " indica que a partição geométrica gerada é"
-        mensagem += " virtualmente idêntica)"
-        st.write(mensagem)
+        grafico = self.grafico_scatter(
+                                        hue=labels_val_predicted,
+                                        df_grafico=df_test
+                                    )
 
-        return retorno
+        return grafico, msn_resul
 
     def __testar_dbscan(
             self,
             best_param: dict,
-            df_test: pd.DataFrame) -> bool:
+            df_test: pd.DataFrame) -> tuple[sns.JointGrid, str]:
         '''
             Função para testar a consistência dos clusters obtidos no conjunto
             de treino com os clusters obtidos no conjunto de validação,
@@ -525,46 +291,61 @@ class Clustering:
                                         )
 
         # --- Exibição dos Resultados ---
-        st.write("=" * 55)
-        st.write(" RESULTADOS DA COMPARAÇÃO DE CLUSTERS (DBSCAN)")
-        st.write("=" * 55)
-        st.write("Clusters identificados no Treino:       ")
-        st.write(f"{np.unique(labels_train)}")
-        st.write("Frequências Esperadas na Validação:     ")
-        st.write(f"{expected_val_counts.values.round(2)}")
-        st.write("Frequências Observadas na Validação:    ")
-        st.write(f"{observed_val_counts.values}")
-        st.write("-" * 55)
-        st.write(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
-        st.write(f"p-valor:                        {p_value:.4f}")
-        st.write("-" * 55)
+        msn_resul = "=" * 50 + "<br>"
+        msn_resul += "<h6 style='text-align: center;'>DBSCAN</h6>"
+        msn_resul += "=" * 50 + "<br>"
+        msn_resul += "Clusters identificados no Treino:       "
+        msn_resul += f"{np.unique(labels_train)}<br><br>"
+        msn_resul += "Frequências Esperadas na Validação:     "
+        msn_resul += f"{expected_val_counts.values.round(2)}<br><br>"
+        msn_resul += "Frequências Observadas na Validação:    "
+        msn_resul += f"{observed_val_counts.values}<br><br>"
+        msn_resul += "-" * 50 + "<br>"
+        msn_resul += f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}<br>"
+        msn_resul += f"p-valor:                        {p_value:.4f}<br>"
+        msn_resul += "-" * 50 + "<br>"
 
-        alpha = 0.05
-        if p_value > alpha:
+        if p_value > 0.05:
             mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
-            mensagem += "clusters na validação É IGUAL à do treino (p > 0.05)."
-            st.write(mensagem)
-            retorno = True
+            mensagem += "clusters na validação "
+            mensagem += "<b style='color: green;'>É IGUAL</b>"
+            mensagem += " à do treino (p > 0.05)."
+            mensagem += "<br>"
+            msn_resul += mensagem
         else:
-            mensagem = "Conclusão: Rejeitamos H0. "
-            mensagem += "A distribuição dos clusters na validação "
-            mensagem += "É DIFERENTE da do treino (p <= 0.05)."
-            st.write(mensagem)
-            retorno = False
+            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos "
+            mensagem += "clusters na validação "
+            mensagem += "<b style='color: red;'>É DIFERENTE</b>"
+            mensagem += " da do treino (p <= 0.05)."
+            mensagem += "<br>"
+            msn_resul += mensagem
+        msn_resul += "<br>" + "-" * 50 + "<br>"
+        if ari_score > 0.5:
+            mensagem = "Conclusão: O modelo de clustering do Treino e o "
+            mensagem += "modelo da Validação "
+            mensagem += "<b style='color: green;'>SÃO SEMELHANTES</b>"
+            mensagem += f" (ARI = {ari_score:.4f})."
+            mensagem += "<br>"
+            msn_resul += mensagem
+        else:
+            mensagem = "Conclusão: O modelo de clustering do Treino e o "
+            mensagem += "modelo da Validação "
+            mensagem += "<b style='color: red;'>NÃO SÃO SEMELHANTES</b>"
+            mensagem += f" (ARI = {ari_score:.4f})."
+            mensagem += "<br>"
+            msn_resul += mensagem
 
-        st.write("-" * 55)
-        mensagem = "Adjusted Rand Index (ARI) entre modelo de Treino e modelo "
-        mensagem += f"da Validação: {ari_score:.4f} (ARI próximo de 1.0"
-        mensagem += " indica que a partição geométrica gerada é"
-        mensagem += " virtualmente idêntica)"
-        st.write(mensagem)
+        grafico = self.grafico_scatter(
+                                        hue=labels_val_predicted,
+                                        df_grafico=df_test
+                                    )
 
-        return retorno
+        return grafico, msn_resul
 
     def __testar_agg(
             self,
             best_param: dict,
-            df_test: pd.DataFrame) -> bool:
+            df_test: pd.DataFrame) -> tuple[sns.JointGrid, str]:
         '''
             Função para testar a consistência dos clusters obtidos no conjunto
             de treino com os clusters obtidos no conjunto de validação,
@@ -648,63 +429,71 @@ class Clustering:
                                         )
 
         # --- Exibição dos Resultados ---
-        st.write("=" * 60)
-        st.write(" RESULTADOS DA COMPARAÇÃO (AGGLOMERATIVE CLUSTERING)")
-        st.write("=" * 60)
-        st.write("Clusters no Treino:                  ")
-        st.write(f"{all_clusters}")
-        st.write("Frequências Esperadas na Validação:  ")
-        st.write(f"{expected_val_counts.values.round(2)}")
-        st.write("Frequências Observadas na Validação:  ")
-        st.write(f"{observed_val_counts.values}")
-        st.write("-" * 60)
-        st.write(f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}")
-        st.write(f"p-valor:                        {p_value:.4f}")
-        st.write("-" * 60)
+        msn_resul = "=" * 50 + "<br>"
+        msn_resul += "<h6 style='text-align: center;'>AGGLOMERATIVE</h6>"
+        msn_resul += "=" * 50 + "<br>"
+        msn_resul += "Clusters no Treino:                  "
+        msn_resul += f"{all_clusters}<br><br>"
+        msn_resul += "Frequências Esperadas na Validação:  "
+        msn_resul += f"{expected_val_counts.values.round(2)}<br><br>"
+        msn_resul += "Frequências Observadas na Validação:  "
+        msn_resul += f"{observed_val_counts.values}<br><br>"
+        msn_resul += "-" * 50 + "<br>"
+        msn_resul += f"Estatística Qui-Quadrado (χ²): {chi2_stat:.4f}<br>"
+        msn_resul += f"p-valor:                        {p_value:.4f}<br>"
+        msn_resul += "-" * 50 + "<br>"
 
-        alpha = 0.05
-        if p_value > alpha:
+        if p_value > 0.05:
             mensagem = "Conclusão: Não rejeitamos H0. A distribuição dos "
-            mensagem += "clusters na validação É IGUAL à do treino (p > 0.05)."
-            st.write(mensagem)
-            retorno = True
+            mensagem += "clusters na validação "
+            mensagem += "<b style='color: green;'>É IGUAL</b>"
+            mensagem += " à do treino (p > 0.05)."
+            mensagem += "<br>"
+            msn_resul += mensagem
         else:
-            mensagem = "Conclusão: Rejeitamos H0. "
-            mensagem += "A distribuição dos clusters na validação "
-            mensagem += "É DIFERENTE da do treino (p <= 0.05)."
-            st.write(mensagem)
-            retorno = False
+            mensagem = "Conclusão: Rejeitamos H0. A distribuição dos "
+            mensagem += "clusters na validação "
+            mensagem += "<b style='color: red;'>É DIFERENTE</b>"
+            mensagem += " da do treino (p <= 0.05)."
+            mensagem += "<br>"
+            msn_resul += mensagem
+        msn_resul += "<br>" + "-" * 50 + "<br>"
+        if ari_score > 0.5:
+            mensagem = "Conclusão: O modelo de clustering do Treino e o "
+            mensagem += "modelo da Validação "
+            mensagem += "<b style='color: green;'>SÃO SEMELHANTES</b>"
+            mensagem += f" (ARI = {ari_score:.4f})."
+            mensagem += "<br>"
+            msn_resul += mensagem
+        else:
+            mensagem = "Conclusão: O modelo de clustering do Treino e o "
+            mensagem += "modelo da Validação "
+            mensagem += "<b style='color: red;'>NÃO SÃO SEMELHANTES</b>"
+            mensagem += f" (ARI = {ari_score:.4f})."
+            mensagem += "<br>"
+            msn_resul += mensagem
 
-        st.write("-" * 60)
-        mensagem = "Adjusted Rand Index (ARI) entre modelo de Treino e modelo "
-        mensagem += f"da Validação: {ari_score:.4f} (ARI próximo de 1.0"
-        mensagem += " indica que a partição geométrica gerada é"
-        mensagem += " virtualmente idêntica)"
-        st.write(mensagem)
+        grafico = self.grafico_scatter(
+                                        hue=labels_val_predicted,
+                                        df_grafico=df_test
+                                    )
 
-        return retorno
+        return grafico, msn_resul
 
     def testar_modelo(
             self,
             best_param: dict,
-            df_test: pd.DataFrame) -> bool:
+            df_test: pd.DataFrame) -> tuple[sns.JointGrid, str]:
         '''
             Função para testar a consistência dos clusters obtidos no conjunto
             de treino com os clusters obtidos no conjunto de validação,
             utilizando o teste Qui-Quadrado de Aderência e o
             Índice de Rand Ajustado (ARI).
                 Parâmetros:
-                    self.c1: str - Nome da primeira variável a ser utilizada
-                    no clustering.
-                    self.c2: str - Nome da segunda variável a ser utilizada
-                    no clustering.
                     best_param: dict
                         Dicionário contendo os melhores parâmetros para o
                         modelo
                         de clustering.
-                    self.df: pd.DataFrame, opcional
-                        DataFrame contendo os dados de treino. Padrão é
-                        self.df.
                     df_test: pd.DataFrame, opcional
                         DataFrame contendo os dados de validação. Padrão é
                         df_test.
@@ -713,19 +502,19 @@ class Clustering:
                     consistente com a do treino, False caso contrário.
         '''
         if self.modelo == 'kmeans':
-            retorno = self.__testar_kmeans(
+            grafico, msn_resul = self.__testar_kmeans(
                 best_param=best_param,
                 df_test=df_test
             )
         elif self.modelo == 'dbscan':
-            retorno = self.__testar_dbscan(
+            grafico, msn_resul = self.__testar_dbscan(
                 best_param=best_param,
                 df_test=df_test
             )
         elif self.modelo == 'agglomerative':
-            retorno = self.__testar_agg(
+            grafico, msn_resul = self.__testar_agg(
                 best_param=best_param,
                 df_test=df_test
             )
 
-        return retorno
+        return grafico, msn_resul

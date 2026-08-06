@@ -19,13 +19,13 @@ class Paginas:
                 str: Mensagem de sucesso.
         '''
         st.set_page_config(
-            page_title="Alunos",
+            page_title="FAcPyML",
             layout="wide",
         )
         st.markdown("""
             <style>
                 .block-container {
-                        padding-top: 1rem;
+                        padding-top: 0rem;
                         padding-bottom: 0rem;
                         padding-left: 3rem;
                         padding-right: 3rem;
@@ -33,9 +33,9 @@ class Paginas:
             </style>
             """, unsafe_allow_html=True)
 
-        title = "Página Inicial"
+        title = "Métricas de Modelos de Machine Learning"
         st.markdown(
-            f"<h1 style='text-align: center; '>{title}</h1>",
+            f"<br><h3 style='text-align: center; '>{title}</h3>",
             unsafe_allow_html=True
         )
 
@@ -69,32 +69,27 @@ class Paginas:
         df_train, df_valid, df_test = self.busca_dados()
 
         abas = st.tabs([
-                            "Métricas de Clustering",
-                            'Métricas de Classificação',
-                            'Métricas de Regressão',
-                            'Dados de Treino, Validação e Teste',
+                            "Clustering",
+                            'Classificação',
+                            'Regressão',
+                            'Datasets',
                         ])
         with abas[0]:
             col = st.columns((2, 2, .05, 2, .05, 2))
             with col[0]:
                 # Create a dropdown menu
-                st.write("Métricas Clusterização")
                 variavel_1 = st.radio(
                     "Primeira variável:",
                     ['PPD_log', 'IFN-γ', 'CD3_2']
                 )
                 variavel_2 = st.radio(
                     "Segunda variável:",
-                    ['PPD_log', 'IFN-γ', 'CD3_2']
+                    ['CD3_2', 'PPD_log', 'IFN-γ']
                 )
 
-            with col[1]:
-                # Testando os modelos de clustering via K-means
-                st.write("Métricas de Clustering via K-means:")
+                # K-means ------------------------------------------------
                 i = variavel_1
                 j = variavel_2
-                st.write("-"*50)
-                st.write(i, j)
 
                 cluster = Clustering(
                     c1=i,
@@ -103,7 +98,7 @@ class Paginas:
                     modelo='kmeans'
                 )
                 resultados = {}
-                resultados["K-means"] = cluster.testar_modelo(
+                resultados["K-means"], msn_kmenans = cluster.testar_modelo(
                     best_param={
                                     'n_clusters': 3,
                                     'init': 'k-means++',
@@ -112,13 +107,9 @@ class Paginas:
                     df_test=df_test,
                 )
 
-            with col[3]:
-                # Testando os modelos de clustering via DBSCAN
-                st.write("Métricas de Clustering via DBSCAN:")
+                # DBSCAN -------------------------------------------------
                 i = variavel_1
                 j = variavel_2
-                st.write("-"*50)
-                st.write(i, j)
 
                 cluster = Clustering(
                     c1=i,
@@ -126,7 +117,7 @@ class Paginas:
                     df=df_train,
                     modelo='dbscan'
                 )
-                resultados["DBSCAN"] = cluster.testar_modelo(
+                resultados["DBSCAN"], msn_dbscan = cluster.testar_modelo(
                     best_param={
                                     'eps': 0.5,
                                     'min_samples': 10,
@@ -135,13 +126,9 @@ class Paginas:
                     df_test=df_test,
                 )
 
-            with col[5]:
-                # Testando os modelos de clustering via Agglomerative
-                st.write("Métricas de Clustering via Agglomerative:")
+                # Agglomerative ------------------------------------------
                 i = variavel_1
                 j = variavel_2
-                st.write("-"*50)
-                st.write(i, j)
 
                 cluster = Clustering(
                     c1=i,
@@ -149,7 +136,7 @@ class Paginas:
                     df=df_train,
                     modelo='agglomerative'
                 )
-                resultados["Agg"] = cluster.testar_modelo(
+                resultados["Agg"], msn_agg = cluster.testar_modelo(
                     best_param={
                                     'n_clusters': 2,
                                     'metric': 'euclidean',
@@ -158,17 +145,21 @@ class Paginas:
                     df_test=df_test,
                 )
 
-                st.dataframe(
-                            pd.DataFrame(
-                                columns=['K-means', 'DBSCAN', 'Agglomerative'],
-                                index=[''],
-                                data=[[
-                                    resultados['K-means'],
-                                    resultados['DBSCAN'],
-                                    resultados['Agg']
-                                ]]
-                            )
-                        )
+            with col[1]:
+                # Testando os modelos de clustering via K-means
+                st.markdown(f"<p>{msn_kmenans}</p>", unsafe_allow_html=True)
+                st.pyplot(resultados["K-means"])
+
+            with col[3]:
+                # Testando os modelos de clustering via DBSCAN
+                st.markdown(f"<p>{msn_dbscan}</p>", unsafe_allow_html=True)
+                st.pyplot(resultados["DBSCAN"])
+
+            with col[5]:
+                # Testando os modelos de clustering via Agglomerative
+                st.markdown(f"<p>{msn_agg}</p>", unsafe_allow_html=True)
+                st.pyplot(resultados["Agg"])
+
         with abas[1]:
             st.write("Métricas de Classificação:")
             st.write("Em desenvolvimento...")
