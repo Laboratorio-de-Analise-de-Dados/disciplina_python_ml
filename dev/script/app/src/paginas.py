@@ -56,10 +56,10 @@ class Paginas:
         # Importando os dados de treino e teste
         banco = acesso_data_banco()
         link = banco+"df_estruturada/"
-        datasets = [link+i for i in os.listdir(link)]
+        datasets = [link+i for i in os.listdir(link) if '.csv' in i]
+        df_test = pd.read_csv(datasets[0])
         df_train = pd.read_csv(datasets[1])
         df_valid = pd.read_csv(datasets[2])
-        df_test = pd.read_csv(datasets[0])
 
         return df_train, df_valid, df_test
 
