@@ -5,7 +5,11 @@ from PIL import Image
 import pandas as pd
 import os
 
-from src.acesso_data import acesso_data_test, acesso_data_banco
+from src.acesso_data import (
+                                acesso_data_test,
+                                acesso_data_banco,
+                                acesso_data_icon
+                            )
 from src.modelos.clustering import Clustering
 
 
@@ -21,6 +25,7 @@ class Paginas:
         st.set_page_config(
             page_title="FAcPyML",
             layout="wide",
+            page_icon=acesso_data_icon()
         )
         st.markdown("""
             <style>
@@ -148,17 +153,17 @@ class Paginas:
             with col[1]:
                 # Testando os modelos de clustering via K-means
                 st.markdown(f"<p>{msn_kmenans}</p>", unsafe_allow_html=True)
-                st.pyplot(resultados["K-means"])
+                st.pyplot(fig=resultados["K-means"])
 
             with col[3]:
                 # Testando os modelos de clustering via DBSCAN
                 st.markdown(f"<p>{msn_dbscan}</p>", unsafe_allow_html=True)
-                st.pyplot(resultados["DBSCAN"])
+                st.pyplot(fig=resultados["DBSCAN"])
 
             with col[5]:
                 # Testando os modelos de clustering via Agglomerative
                 st.markdown(f"<p>{msn_agg}</p>", unsafe_allow_html=True)
-                st.pyplot(resultados["Agg"])
+                st.pyplot(fig=resultados["Agg"])
 
         with abas[1]:
             st.write("Métricas de Classificação:")
@@ -224,19 +229,14 @@ class Paginas:
             Retorna:
                 str: Mensagem de sucesso.
         '''
-        data = acesso_data_test()
-        data_lab_logo = data
-        # Importa a imagem
-        img = np.asarray(Image.open(data_lab_logo))
-
         # Plota a imagem
-        plt.imshow(img)
+        fig = plt.figure(figsize=(3, 3))
+        plt.imshow(np.asarray(Image.open(acesso_data_test())))
         plt.axis("off")
 
         # Edita as colunas e insere os dados
         col_img = st.columns((15, 1))
         with col_img[1]:
-            st.write("DataLab()")
-            st.pyplot(fig=plt)
+            st.pyplot(fig=fig)
 
         return "Logo Inserido"

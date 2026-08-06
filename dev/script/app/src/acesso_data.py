@@ -3,10 +3,23 @@ import os
 
 def acesso_data_test() -> str:
     '''
-        Função para acessar o banco de dados de treino.
+        Função para acessar o ícone da aplicação.
     '''
     path_img_local = "./app/data/img/DataLab_Logo_i.jpg"
     path_img = "./dev/script/app/data/img/DataLab_Logo_i.jpg"
+
+    if os.path.isfile(path_img_local):
+        path_img = path_img_local
+
+    return path_img
+
+
+def acesso_data_icon() -> str:
+    '''
+        Função para acessar o ícone da aplicação.
+    '''
+    path_img_local = "./app/data/img/PythonML.ico"
+    path_img = "./dev/script/app/data/img/PythonML.ico"
 
     if os.path.isfile(path_img_local):
         path_img = path_img_local
