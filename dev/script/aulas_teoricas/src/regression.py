@@ -96,8 +96,9 @@ class Regression:
         p = sns.jointplot(
             x='y_true',
             y='y_pred',
-            data=df_test,
             kind='reg',
+            marginal_ticks=True,
+            data=df_test,
         )
         p.fig.suptitle(f"Correlação predito / observado - {modelo}", y=1.02)
         plt.text(
@@ -249,7 +250,7 @@ class Regression:
 
     # Transformado em método estático para permitir a serialização (pickle)
     @staticmethod
-    def _neural_network_model(
+    def __neural_network_model(
             optimizer='SGD',
             activation1='relu',
             activation2='relu') -> Sequential:
@@ -279,7 +280,7 @@ class Regression:
                 func=lambda x: tf.convert_to_tensor(x, dtype=tf.float32)
             )),
             ('nn', KerasRegressor(
-                                    build_fn=self._neural_network_model,
+                                    build_fn=self.__neural_network_model,
                                     verbose=0
                                 )),
         ])
