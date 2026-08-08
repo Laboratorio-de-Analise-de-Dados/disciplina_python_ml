@@ -65,13 +65,19 @@ class Line_equation:
         '''
             y - y0 = m(x - x0)
 
-            Função que calcula o valor de y para um dado x, usando a equação
-            da reta.
+            Função que calcula o valor de y para um dado x, usando a equação da
+            reta, a partir dos pontos mínimo e máximo das colunas x e y do
+            DataFrame fornecido.
+            y é calculado a partir do ponto mínimo da reta, e o coeficiente
+            angular é calculado a partir dos pontos mínimo e máximo das 
+            colunas x e y.
+            y = (((m + m_perc) * x) + c)/m[1]
                 Parametros:
-                    varia_coeficiente: valor que será usado para variar o
-                    coeficiente angular da reta.
-                    new_y: valor de y que será usado para calcular o valor de
-                    x correspondente.
+                    varia_coeficiente: valor que será somado ao coeficiente
+                    angular da reta, para alterar a inclinação da reta.
+                    new_y: valor de y que será usado no cálculo, caso seja
+                    fornecido. Caso contrário, o valor de y do ponto mínimo
+                    da reta será usado.
                 Retorna:
                     y: valor de y correspondente ao valor de x fornecido.
         '''
