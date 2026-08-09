@@ -1,4 +1,4 @@
-from src.paginas import Paginas
+from main import pagina_estrutura, pagina_inicio, logo_datalab
 
 
 def test_estrutura_pagina():
@@ -6,8 +6,7 @@ def test_estrutura_pagina():
     teste_entrada = "Ajustado"
 
     # When
-    iniciando = Paginas()
-    teste_saida = iniciando.pagina_estrutura()
+    teste_saida = pagina_estrutura()
 
     # Then
     assert teste_entrada == teste_saida
@@ -18,8 +17,7 @@ def test_iniciando_sistema():
     teste_entrada = "Diga lá loco"
 
     # When
-    iniciando = Paginas()
-    teste_saida = iniciando.pagina_inicio()
+    teste_saida = pagina_inicio(entrada=teste_entrada)
 
     # Then
     assert teste_entrada == teste_saida
@@ -30,8 +28,7 @@ def test_logo_datalab():
     teste_entrada = "Logo Inserido"
 
     # When
-    iniciando = Paginas()
-    teste_saida = iniciando.logo_datalab()
+    teste_saida = logo_datalab()
 
     # Then
     assert teste_entrada == teste_saida
