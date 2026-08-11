@@ -64,7 +64,7 @@ class Classifier:
         alpha = 0.05
         st.write("\nConclusão:")
         if p_valor < alpha:
-            mensagem = "Falhamos em rejeitar H0: "
+            mensagem = "Rejeitamos H0: "
             mensagem += "A distribuição das classes no treino e no teste é "
             mensagem += "<b style='color: red;'>ESTATISTICAMENTE DIFERENTE "
             mensagem += "(Heterogênea).</b>"
