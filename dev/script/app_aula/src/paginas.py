@@ -1,9 +1,16 @@
-def pagina_inicial() -> str:
+from pydantic import validate_call
+from loguru import logger
+
+
+@validate_call
+def pagina_inicial(mensagem: str) -> str:
     '''
         Função de inicialização da página inicial.
         Parametros:
-            None
+            mensagem (str): Mensagem a ser exibida.
         Retorna:
-            str: Mensagem de sucesso.
+            str: Mensagem recebida.
     '''
-    return "Página inicial carregada com sucesso."
+    # Log indicando que a função processou o dado com sucesso
+    logger.info(f"Página inicial carregada com a mensagem: {mensagem}")
+    return mensagem
