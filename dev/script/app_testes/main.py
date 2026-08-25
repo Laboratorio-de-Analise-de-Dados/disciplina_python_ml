@@ -5,17 +5,22 @@ from loguru import logger
 
 
 if __name__ == "__main__":
-    # Remove a configuração padrão do terminal (opcional, para não duplicar se for mudar o formato)
+    # Remove a configuração padrão do terminal (opcional,
+    # para não duplicar se for mudar o formato)
     logger.remove()
-    
-    # Define um formato personalizado destacando a data (Ex: 14/08/2026 15:47:21)
+
+    # Define um formato personalizado destacando a data (Ex: 14/08/2026 15:47)
     formato_personalizado = "{time:DD/MM/YYYY HH:mm:ss} | {level} | {message}"
 
     # Configura o log para o terminal com a data formatada
     logger.add(sys.stderr, format=formato_personalizado)
-    
+
     # Configura o log para o arquivo com a data formatada
-    logger.add("./app_aula/log.log", rotation="1 MB", format=formato_personalizado)
+    logger.add(
+        "./app_aula/log.log",
+        rotation="1 MB",
+        format=formato_personalizado
+    )
 
     logger.debug("Iniciando a execução do script...")
 
