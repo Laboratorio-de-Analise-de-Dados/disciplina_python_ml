@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import streamlit as st
 from joblib import load
+from pydantic import validate_call
 
 from src.acesso_data import acesso_data_banco
 from src.modelos.clustering import Clustering
@@ -11,6 +12,7 @@ from src.modelos.regression import Regression
 
 class Paginas:
     @st.cache_data
+    @validate_call
     def busca_dados_cluster(
             _self) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         '''
@@ -30,6 +32,7 @@ class Paginas:
         return df_train, df_valid, df_test
 
     @st.cache_data
+    @validate_call
     def busca_dados_class(
             _self) -> tuple[dict[str, pd.DataFrame], pd.DataFrame]:
         '''
@@ -48,6 +51,7 @@ class Paginas:
         return datasets, df_test
 
     @st.cache_data
+    @validate_call
     def busca_dados_regr(
             _self) -> tuple[pd.DataFrame, pd.DataFrame]:
         '''

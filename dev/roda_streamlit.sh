@@ -22,4 +22,4 @@ echo "__________________________________________________________________________
 echo "                              Restart Docker Container and Run Streamlit"
 echo "____________________________________________________________________________________________________________________________________"
 docker restart $1
-docker exec $1 streamlit run ./app/main.py --server.port=8080 --server.address=0.0.0.0
+docker exec $1 streamlit run ./$2/main.py --server.port=8080 --server.address=0.0.0.0

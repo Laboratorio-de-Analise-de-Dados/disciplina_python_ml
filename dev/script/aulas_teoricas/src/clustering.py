@@ -671,7 +671,7 @@ class Clustering:
 
         return retorno
 
-    def testar_modelo(
+    def testar_modelo( 
             self,
             best_param: dict,
             df_test: pd.DataFrame) -> bool:
