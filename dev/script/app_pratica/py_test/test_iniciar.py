@@ -2,7 +2,7 @@ from src.iniciar import Iniciar
 
 
 def test_atributo_testo():
-    mensagem = 'Alguma coisa'
+    mensagem = "Alguma coisa"
 
     inicia = Iniciar(mensagem=mensagem)
 
@@ -10,7 +10,7 @@ def test_atributo_testo():
 
 
 def test_mostra_mensagem():
-    testo_inicial = 'Mensagem enviada'
+    testo_inicial = "Mensagem enviada"
 
     inicia = Iniciar(mensagem=testo_inicial)
     testo_saida = inicia.mostra_mensagem()

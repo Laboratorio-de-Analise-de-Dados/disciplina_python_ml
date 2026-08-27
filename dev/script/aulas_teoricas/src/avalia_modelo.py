@@ -10,16 +10,18 @@ from sklearn.metrics import ConfusionMatrixDisplay
 
 
 class Avalia_modelo:
-    '''
-        Classe que avalia o modelo de classificação
-    '''
+    """
+    Classe que avalia o modelo de classificação
+    """
+
     def __init__(
-            self,
-            df: pd.DataFrame,
-            indep: pd.Index,
-            modelo,
-            target: str = 'target',
-            troca_classe: bool = False) -> None:
+        self,
+        df: pd.DataFrame,
+        indep: pd.Index,
+        modelo,
+        target: str = "target",
+        troca_classe: bool = False,
+    ) -> None:
         self.df = df
         self.target = target
         self.indep = indep
@@ -27,20 +29,16 @@ class Avalia_modelo:
         self.observed = df.loc[:, target]
         self.troca_classe = troca_classe
         if self.troca_classe:
-            self.predito = self.__retorna_classe(
-                                                    modelo.predict(
-                                                        df.loc[:, indep]
-                                                    )
-                                                )
+            self.predito = self.__retorna_classe(modelo.predict(df.loc[:, indep]))
         else:
             self.predito = modelo.predict(df.loc[:, indep])
 
     def __retorna_classe(self, pred: pd.Series) -> list:
-        '''
+        """
         Função que retorna a classe de predição
         :param pred (pd.Series): Previsão do modelo
         :return (list): Classe de predição
-        '''
+        """
         retorno = [0 if i <= 0.5 else 1 for i in pred]
         return retorno
 
@@ -48,8 +46,8 @@ class Avalia_modelo:
         accuracy = accuracy_score(self.observed, self.predito)
         cm = confusion_matrix(self.observed, self.predito)
         disp = ConfusionMatrixDisplay(
-                        confusion_matrix=cm,
-                        display_labels=self.observed.value_counts().index,
+            confusion_matrix=cm,
+            display_labels=self.observed.value_counts().index,
         )
         disp.plot(cmap=plt.cm.Greens)
         plt.title(f"{self.target}'s cluster: Accuracy {accuracy:.2f}")
@@ -91,17 +89,21 @@ class Avalia_modelo:
         auc = metrics.auc(fpr, tpr)
 
         # Gini
-        gini = 2*auc - 1
+        gini = 2 * auc - 1
 
-        print(pd.DataFrame({
-            'Acurácia': [acc],
-            'Precision': [precision],
-            'Recall': [recall],
-            'F1-Score': [f1_score],
-            'KS': [ks],
-            'AUC': [auc],
-            'GINI': [gini]
-            }).round(4))
+        print(
+            pd.DataFrame(
+                {
+                    "Acurácia": [acc],
+                    "Precision": [precision],
+                    "Recall": [recall],
+                    "F1-Score": [f1_score],
+                    "KS": [ks],
+                    "AUC": [auc],
+                    "GINI": [gini],
+                }
+            ).round(4)
+        )
 
         return None
 
@@ -115,7 +117,7 @@ class Avalia_modelo:
         ax.plot(
             np.sort(score_pop1),
             np.linspace(0, 1, len(score_pop1), endpoint=False),
-            label='Cluster 1'
+            label="Cluster 1",
         )
 
         index = self.df[self.df[self.target] == 0][self.indep]
@@ -123,13 +125,13 @@ class Avalia_modelo:
         ax.plot(
             np.sort(score_pop2),
             np.linspace(0, 1, len(score_pop2), endpoint=False),
-            label='Cluster 0'
+            label="Cluster 0",
         )
         ax.legend()
 
         plt.title(f"Gráfico KS {self.target}")
-        ax.set_xlabel('P')
-        ax.set_ylabel('Função Distribuição Acumulada')
+        ax.set_xlabel("P")
+        ax.set_ylabel("Função Distribuição Acumulada")
         plt.show()
 
         return None
@@ -145,27 +147,23 @@ class Avalia_modelo:
         fpr, tpr, _ = metrics.roc_curve(flag_serie, self.predito)
         auc_ = metrics.auc(fpr, tpr)
         plt.plot(
-                    fpr,
-                    tpr,
-                    color='darkorange',
-                    lw=lw,
-                    label=f'ROC curve (area = {auc_})'
-                )
-        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+            fpr, tpr, color="darkorange", lw=lw, label=f"ROC curve (area = {auc_})"
+        )
+        plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
         plt.xlim([0.0, 1.0])
         plt.ylim([0.0, 1.05])
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title(f'Receiver Operating Characteristic (ROC) for {self.target}')
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title(f"Receiver Operating Characteristic (ROC) for {self.target}")
         plt.legend(loc="lower right")
         plt.show()
 
         return None
 
     def metricas(self) -> None:
-        '''
-            Calcula as métricas pontuais do modelo
-        '''
+        """
+        Calcula as métricas pontuais do modelo
+        """
         self.__matrix_confusao()
         self.__metricas_pontuais()
         self.__curva_roc()

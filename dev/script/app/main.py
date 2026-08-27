@@ -8,30 +8,29 @@ from src.paginas import Paginas
 
 
 def pagina_inicio(entrada: str) -> str:
-    '''
-        Função de inicialização da página inicial.
-        Parametros:
-            entrada: str
-        Retorna:
-            str: Mensagem de sucesso.
-    '''
+    """
+    Função de inicialização da página inicial.
+    Parametros:
+        entrada: str
+    Retorna:
+        str: Mensagem de sucesso.
+    """
     return entrada
 
 
 def pagina_estrutura() -> str:
-    '''
-        Função de estruturação da página inicial.
-        Parametros:
-            None
-        Retorna:
-            str: Mensagem de sucesso.
-    '''
+    """
+    Função de estruturação da página inicial.
+    Parametros:
+        None
+    Retorna:
+        str: Mensagem de sucesso.
+    """
     st.set_page_config(
-        page_title="FAcPyML",
-        layout="wide",
-        page_icon=acesso_data_icon()
+        page_title="FAcPyML", layout="wide", page_icon=acesso_data_icon()
     )
-    st.markdown("""
+    st.markdown(
+        """
         <style>
             .block-container {
                     padding-top: 0rem;
@@ -40,12 +39,13 @@ def pagina_estrutura() -> str:
                     padding-right: 3rem;
                 }
         </style>
-        """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     title = "Métricas de Modelos de Machine Learning"
     st.markdown(
-        f"<br><h3 style='text-align: center; '>{title}</h3>",
-        unsafe_allow_html=True
+        f"<br><h3 style='text-align: center; '>{title}</h3>", unsafe_allow_html=True
     )
 
     return "Ajustado"
@@ -53,13 +53,13 @@ def pagina_estrutura() -> str:
 
 @st.cache_data
 def logo_datalab() -> str:
-    '''
-        Função de inserção do logo do DataLab.
-        Parametros:
-            None
-        Retorna:
-            str: Mensagem de sucesso.
-    '''
+    """
+    Função de inserção do logo do DataLab.
+    Parametros:
+        None
+    Retorna:
+        str: Mensagem de sucesso.
+    """
     # Plota a imagem
     fig = plt.figure(figsize=(3, 3))
     plt.imshow(np.asarray(Image.open(acesso_data_test())))

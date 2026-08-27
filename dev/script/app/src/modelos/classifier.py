@@ -11,19 +11,20 @@ from sklearn.metrics import (
 
 
 class Classifier:
-    '''
-        Classificador genérico que encapsula diferentes modelos de
-        aprendizado de máquina.
-            Parâmetros
-            ----------
-            df : pd.DataFrame
-                DataFrame contendo as features e a coluna alvo 'classe'.
+    """
+    Classificador genérico que encapsula diferentes modelos de
+    aprendizado de máquina.
+        Parâmetros
+        ----------
+        df : pd.DataFrame
+            DataFrame contendo as features e a coluna alvo 'classe'.
 
-            Métodos
-            -------
-            classify(modelo)
-                Treina e avalia o modelo especificado.
-    '''
+        Métodos
+        -------
+        classify(modelo)
+            Treina e avalia o modelo especificado.
+    """
+
     def __init__(self, df: pd.DataFrame) -> None:
         self.df = df
 
@@ -45,9 +46,9 @@ class Classifier:
         """
         # 3. Criando a Tabela de Contingência (Frequências Observadas)
         tabela_contingencia = pd.crosstab(
-                                            self.df['Dataset'],
-                                            self.df['Classe_Predita'],
-                                        )
+            self.df["Dataset"],
+            self.df["Classe_Predita"],
+        )
         st.write("Tabela de Contingência (Observada):")
         st.dataframe(tabela_contingencia.T)
         st.write("-" * 40)
@@ -79,36 +80,29 @@ class Classifier:
         return None
 
     def matrix_confusao(self, df: pd.DataFrame, obs: str, pred: str) -> None:
-        '''
-            Exibe a matriz de confusão do melhor modelo encontrado pelo
-            GridSearchCV.
-                Parâmetros
-                ----------
-                grid_search : GridSearchCV
-                    Objeto GridSearchCV já ajustado com os dados.
-        '''
+        """
+        Exibe a matriz de confusão do melhor modelo encontrado pelo
+        GridSearchCV.
+            Parâmetros
+            ----------
+            grid_search : GridSearchCV
+                Objeto GridSearchCV já ajustado com os dados.
+        """
         y_obs = df[obs]
         y_pred = df[pred]
 
         accuracy = accuracy_score(y_obs, y_pred)
         cm = confusion_matrix(y_obs, y_pred)
         disp = ConfusionMatrixDisplay(
-                        confusion_matrix=cm,
-                        display_labels=y_obs.value_counts().index,
+            confusion_matrix=cm,
+            display_labels=y_obs.value_counts().index,
         )
         disp.plot(cmap=plt.cm.Greens)
         plt.title(f"Accuracy {accuracy:.2f}")
         st.pyplot(plt)
         st.write("\nClassification Report:")
-        st.dataframe((
-                        pd.DataFrame(
-                            classification_report(
-                                y_obs,
-                                y_pred,
-                                output_dict=True
-                            )
-                        )
-                        .T
-        ))
+        st.dataframe(
+            (pd.DataFrame(classification_report(y_obs, y_pred, output_dict=True)).T)
+        )
 
         return None

@@ -16,11 +16,7 @@ if __name__ == "__main__":
     logger.add(sys.stderr, format=formato_personalizado)
 
     # Configura o log para o arquivo com a data formatada
-    logger.add(
-        "./app_aula/log.log",
-        rotation="1 MB",
-        format=formato_personalizado
-    )
+    logger.add("./app_aula/log.log", rotation="1 MB", format=formato_personalizado)
 
     logger.debug("Iniciando a execução do script...")
 
@@ -31,7 +27,7 @@ if __name__ == "__main__":
 
     try:
         resultado_sucesso = pagina_inicial(
-                            mensagem="Página inicial carregada com sucesso."
+            mensagem="Página inicial carregada com sucesso."
         )
         logger.success("Função executada perfeitamente.")
         print(resultado_sucesso)

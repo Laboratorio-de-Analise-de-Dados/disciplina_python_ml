@@ -8,18 +8,18 @@ class Iniciar:
         return None
 
     def __mensagem_boas_vindas(self) -> str:
-        '''
-            Função de inicialização do sistema
-            Parametros:
-                mensagem (str): Mensagem recebida
-            Retorno:
-                retorno (str): Mensagem transmitida
-        '''
+        """
+        Função de inicialização do sistema
+        Parametros:
+            mensagem (str): Mensagem recebida
+        Retorno:
+            retorno (str): Mensagem transmitida
+        """
         retorno = self.testo
         return retorno
 
     @validate_call
     def mostra_mensagem(self) -> str:
-        print('Mensagem de boas vindas')
+        print("Mensagem de boas vindas")
         print(f"{self.__mensagem_boas_vindas()}")
-        return 'Mensagem enviada'
+        return "Mensagem enviada"

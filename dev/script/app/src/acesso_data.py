@@ -2,9 +2,9 @@ import os
 
 
 def acesso_data_test() -> str:
-    '''
-        Função para acessar o ícone da aplicação.
-    '''
+    """
+    Função para acessar o ícone da aplicação.
+    """
     path_img_local = "./app/data/img/DataLab_Logo_i.jpg"
     path_img = "./dev/script/app/data/img/DataLab_Logo_i.jpg"
 
@@ -15,9 +15,9 @@ def acesso_data_test() -> str:
 
 
 def acesso_data_icon() -> str:
-    '''
-        Função para acessar o ícone da aplicação.
-    '''
+    """
+    Função para acessar o ícone da aplicação.
+    """
     path_img_local = "./app/data/img/PythonML.ico"
     path_img = "./dev/script/app/data/img/PythonML.ico"
 
@@ -28,9 +28,9 @@ def acesso_data_icon() -> str:
 
 
 def acesso_data_banco() -> str:
-    '''
-        Função para acessar o banco de dados de treino.
-    '''
+    """
+    Função para acessar o banco de dados de treino.
+    """
     path_banco_local = "./app/data/"
     path_banco = "./dev/script/app/data/"
 
