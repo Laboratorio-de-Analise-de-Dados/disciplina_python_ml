@@ -31,14 +31,15 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_classif
 
 # Métricas da classificação
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import ConfusionMatrixDisplay
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-from sklearn.metrics import f1_score
-
+from sklearn.metrics import (
+                                classification_report,
+                                confusion_matrix,
+                                ConfusionMatrixDisplay,
+                                accuracy_score,
+                                precision_score,
+                                recall_score,
+                                f1_score,
+                            )
 
 class Classifier:
     """
